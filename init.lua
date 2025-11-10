@@ -1,0 +1,193 @@
+-- ============================================================================
+-- NEOVIM CONFIG - Modern Code Editor Theme
+-- ============================================================================
+
+-- Apply theme BEFORE anything else loads
+vim.cmd([[
+  " Disable all existing colorschemes
+  syntax reset
+  set background=dark
+
+  " Base colors - dark gray background, light foreground (like VSCode Dark+)
+  highlight Normal guifg=#d4d4d4 guibg=#1e1e1e ctermfg=188 ctermbg=234
+  highlight NormalFloat guifg=#d4d4d4 guibg=#252526 ctermfg=188 ctermbg=235
+
+  " Line numbers - subtle gray
+  highlight LineNr guifg=#858585 guibg=#1e1e1e ctermfg=102 ctermbg=234
+  highlight CursorLineNr guifg=#c6c6c6 guibg=#1e1e1e gui=bold ctermfg=251 ctermbg=234 cterm=bold
+
+  " Cursorline - very subtle highlight
+  highlight CursorLine guibg=#2a2a2a ctermbg=235
+  highlight CursorColumn guibg=#2a2a2a ctermbg=235
+
+  " Comments - gray-green, italic
+  highlight Comment guifg=#6a9955 gui=italic ctermfg=65 cterm=italic
+
+  " Keywords - purple/magenta (like VSCode)
+  highlight Statement guifg=#c586c0 gui=bold ctermfg=175 cterm=bold
+  highlight Keyword guifg=#c586c0 gui=bold ctermfg=175 cterm=bold
+  highlight Conditional guifg=#c586c0 ctermfg=175
+  highlight Repeat guifg=#c586c0 ctermfg=175
+
+  " Functions - yellow
+  highlight Function guifg=#dcdcaa ctermfg=187
+
+  " Types - teal/cyan
+  highlight Type guifg=#4ec9b0 gui=bold ctermfg=79 cterm=bold
+  highlight StorageClass guifg=#569cd6 ctermfg=74
+
+  " Variables and identifiers - light blue
+  highlight Identifier guifg=#9cdcfe ctermfg=117
+  highlight Constant guifg=#4fc1ff ctermfg=81
+
+  " Strings - orange/salmon
+  highlight String guifg=#ce9178 ctermfg=174
+  highlight Character guifg=#ce9178 ctermfg=174
+
+  " Numbers and booleans - light green
+  highlight Number guifg=#b5cea8 ctermfg=150
+  highlight Boolean guifg=#569cd6 ctermfg=74
+  highlight Float guifg=#b5cea8 ctermfg=150
+
+  " Operators and delimiters - light gray
+  highlight Operator guifg=#d4d4d4 ctermfg=188
+  highlight Delimiter guifg=#808080 ctermfg=244
+
+  " Special - orange
+  highlight Special guifg=#d7ba7d ctermfg=180
+  highlight SpecialChar guifg=#d7ba7d ctermfg=180
+
+  " Preprocessor - purple
+  highlight PreProc guifg=#c586c0 ctermfg=175
+  highlight Include guifg=#c586c0 ctermfg=175
+  highlight Define guifg=#c586c0 ctermfg=175
+
+  " UI elements - darker grays with blue accents
+  highlight StatusLine guifg=#ffffff guibg=#007acc gui=bold ctermfg=15 ctermbg=31 cterm=bold
+  highlight StatusLineNC guifg=#858585 guibg=#2d2d30 ctermfg=102 ctermbg=236
+  highlight VertSplit guifg=#444444 guibg=#1e1e1e ctermfg=238 ctermbg=234
+  highlight SignColumn guifg=#858585 guibg=#1e1e1e ctermfg=102 ctermbg=234
+
+  " Tabline
+  highlight TabLine guifg=#858585 guibg=#2d2d30 ctermfg=102 ctermbg=236
+  highlight TabLineFill guibg=#2d2d30 ctermbg=236
+  highlight TabLineSel guifg=#ffffff guibg=#1e1e1e gui=bold ctermfg=15 ctermbg=234 cterm=bold
+
+  " Search - blue highlight
+  highlight Search guifg=#000000 guibg=#4fc1ff gui=bold ctermfg=0 ctermbg=81 cterm=bold
+  highlight IncSearch guifg=#000000 guibg=#007acc gui=bold ctermfg=0 ctermbg=31 cterm=bold
+  highlight CurSearch guifg=#000000 guibg=#ff9900 gui=bold ctermfg=0 ctermbg=208 cterm=bold
+
+  " Visual selection - blue-gray
+  highlight Visual guifg=#ffffff guibg=#264f78 ctermfg=15 ctermbg=24
+
+  " Popups and menus - VSCode style
+  highlight Pmenu guifg=#cccccc guibg=#252526 ctermfg=252 ctermbg=235
+  highlight PmenuSel guifg=#ffffff guibg=#094771 gui=bold ctermfg=15 ctermbg=24 cterm=bold
+  highlight PmenuSbar guibg=#2d2d30 ctermbg=236
+  highlight PmenuThumb guibg=#4e4e4e ctermbg=239
+  highlight PmenuKind guifg=#4fc1ff guibg=#252526 ctermfg=81 ctermbg=235
+  highlight PmenuKindSel guifg=#4fc1ff guibg=#094771 ctermfg=81 ctermbg=24
+
+  " Floating windows
+  highlight FloatBorder guifg=#454545 guibg=#252526 ctermfg=238 ctermbg=235
+
+  " Diagnostics - proper error colors
+  highlight DiagnosticError guifg=#f44747 ctermfg=203
+  highlight DiagnosticWarn guifg=#ff8800 ctermfg=208
+  highlight DiagnosticInfo guifg=#4fc1ff ctermfg=81
+  highlight DiagnosticHint guifg=#858585 ctermfg=102
+  highlight DiagnosticUnderlineError gui=underline guisp=#f44747 cterm=underline
+  highlight DiagnosticUnderlineWarn gui=underline guisp=#ff8800 cterm=underline
+  highlight DiagnosticUnderlineInfo gui=underline guisp=#4fc1ff cterm=underline
+  highlight DiagnosticUnderlineHint gui=underline guisp=#858585 cterm=underline
+
+  " Git signs
+  highlight GitSignsAdd guifg=#587c0c ctermfg=64
+  highlight GitSignsChange guifg=#0c7d9d ctermfg=31
+  highlight GitSignsDelete guifg=#94151b ctermfg=88
+  highlight DiffAdd guibg=#1e3a1e ctermbg=22
+  highlight DiffChange guibg=#1e3a3a ctermbg=23
+  highlight DiffDelete guifg=#f44747 guibg=#3a1e1e ctermfg=203 ctermbg=52
+  highlight DiffText guibg=#2a5a5a ctermbg=24
+
+  " Telescope - modern blue theme
+  highlight TelescopeBorder guifg=#454545 ctermfg=238
+  highlight TelescopePromptBorder guifg=#007acc ctermfg=31
+  highlight TelescopeSelection guifg=#ffffff guibg=#094771 gui=bold ctermfg=15 ctermbg=24 cterm=bold
+  highlight TelescopeSelectionCaret guifg=#4fc1ff ctermfg=81
+  highlight TelescopeMatching guifg=#4fc1ff gui=bold ctermfg=81 cterm=bold
+  highlight TelescopePromptPrefix guifg=#4fc1ff ctermfg=81
+
+  " NvimTree - file explorer colors
+  highlight NvimTreeNormal guifg=#cccccc guibg=#252526 ctermfg=252 ctermbg=235
+  highlight NvimTreeFolderName guifg=#cccccc ctermfg=252
+  highlight NvimTreeOpenedFolderName guifg=#4fc1ff gui=bold ctermfg=81 cterm=bold
+  highlight NvimTreeRootFolder guifg=#4fc1ff gui=bold ctermfg=81 cterm=bold
+  highlight NvimTreeSymlink guifg=#9cdcfe ctermfg=117
+  highlight NvimTreeExecFile guifg=#b5cea8 gui=bold ctermfg=150 cterm=bold
+  highlight NvimTreeSpecialFile guifg=#dcdcaa ctermfg=187
+  highlight NvimTreeGitDirty guifg=#ff8800 ctermfg=208
+  highlight NvimTreeGitNew guifg=#587c0c ctermfg=64
+  highlight NvimTreeGitDeleted guifg=#f44747 ctermfg=203
+
+  " Treesitter specific highlights
+  highlight @keyword guifg=#c586c0 ctermfg=175
+  highlight @keyword.function guifg=#c586c0 gui=bold ctermfg=175 cterm=bold
+  highlight @function guifg=#dcdcaa ctermfg=187
+  highlight @function.builtin guifg=#dcdcaa gui=bold ctermfg=187 cterm=bold
+  highlight @variable guifg=#9cdcfe ctermfg=117
+  highlight @variable.builtin guifg=#569cd6 ctermfg=74
+  highlight @string guifg=#ce9178 ctermfg=174
+  highlight @number guifg=#b5cea8 ctermfg=150
+  highlight @type guifg=#4ec9b0 ctermfg=79
+  highlight @type.builtin guifg=#569cd6 ctermfg=74
+  highlight @constant guifg=#4fc1ff ctermfg=81
+  highlight @constant.builtin guifg=#569cd6 ctermfg=74
+  highlight @comment guifg=#6a9955 gui=italic ctermfg=65 cterm=italic
+  highlight @parameter guifg=#9cdcfe ctermfg=117
+  highlight @property guifg=#9cdcfe ctermfg=117
+  highlight @constructor guifg=#4ec9b0 ctermfg=79
+
+  " Ensure no transparency on end of buffer
+  highlight EndOfBuffer guifg=#1e1e1e guibg=#1e1e1e ctermfg=234 ctermbg=234
+
+  " Fold colors
+  highlight Folded guifg=#858585 guibg=#2d2d30 ctermfg=102 ctermbg=236
+  highlight FoldColumn guifg=#858585 guibg=#1e1e1e ctermfg=102 ctermbg=234
+
+  " Spell checking
+  highlight SpellBad gui=undercurl guisp=#f44747 cterm=underline
+  highlight SpellCap gui=undercurl guisp=#4fc1ff cterm=underline
+  highlight SpellRare gui=undercurl guisp=#c586c0 cterm=underline
+
+  " Which-key
+  highlight WhichKey guifg=#4fc1ff ctermfg=81
+  highlight WhichKeyGroup guifg=#c586c0 ctermfg=175
+  highlight WhichKeyDesc guifg=#cccccc ctermfg=252
+  highlight WhichKeySeparator guifg=#6a9955 ctermfg=65
+  highlight WhichKeyFloat guibg=#252526 ctermbg=235
+  highlight WhichKeyBorder guifg=#454545 ctermfg=238
+]])
+
+-- Bootstrap lazy.nvim package manager
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable",
+    lazypath,
+  })
+end
+vim.opt.rtp:prepend(lazypath)
+
+-- Load core configuration
+require("core.options")
+require("core.mappings")
+require("core.autocmds")
+
+-- Load plugins
+require("plugins.lazy_setup")
