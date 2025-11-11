@@ -108,6 +108,28 @@ require("lazy").setup({
     ft = "java",
   },
 
+  -- TypeScript enhanced support
+  {
+    "pmizio/typescript-tools.nvim",
+    dependencies = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
+    ft = { "typescript", "typescriptreact", "javascript", "javascriptreact" },
+    opts = {
+      settings = {
+        separate_diagnostic_server = true,
+        publish_diagnostic_on = "insert_leave",
+        tsserver_file_preferences = {
+          includeInlayParameterNameHints = "all",
+          includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+          includeInlayFunctionParameterTypeHints = true,
+          includeInlayVariableTypeHints = true,
+          includeInlayPropertyDeclarationTypeHints = true,
+          includeInlayFunctionLikeReturnTypeHints = true,
+          includeInlayEnumMemberValueHints = true,
+        },
+      },
+    },
+  },
+
   -- Formatting
   {
     "stevearc/conform.nvim",
@@ -140,6 +162,8 @@ require("lazy").setup({
     event = "InsertEnter",
     dependencies = {
       "hrsh7th/cmp-nvim-lsp",
+      "hrsh7th/cmp-buffer",
+      "hrsh7th/cmp-path",
       "L3MON4D3/LuaSnip",
       "saadparwaiz1/cmp_luasnip",
     },
@@ -156,6 +180,15 @@ require("lazy").setup({
     "L3MON4D3/LuaSnip",
     version = "v2.*",
     build = "make install_jsregexp",
+    dependencies = { "rafamadriz/friendly-snippets" },
+    config = function()
+      require("luasnip.loaders.from_vscode").lazy_load()
+    end,
+  },
+
+  {
+    "rafamadriz/friendly-snippets",
+    lazy = true,
   },
 
   {
@@ -244,10 +277,70 @@ require("lazy").setup({
 
       -- Jump marks
       vim.keymap.set("n", "<C-t>", function() harpoon:list():select(1) end, { desc = "Harpoon: File 1" })
-      vim.keymap.set("n", "<C-n>", function() harpoon:list():select(2) end, { desc = "Harpoon: File 2" })
-      vim.keymap.set("n", "<C-s>", function() harpoon:list():select(3) end, { desc = "Harpoon: File 3" })
-      vim.keymap.set("n", "<C-i>", function() harpoon:list():select(4) end, { desc = "Harpoon: File 4" })
+      vim.keymap.set("n", "<C-y>", function() harpoon:list():select(2) end, { desc = "Harpoon: File 2" })
+      vim.keymap.set("n", "<C-u>", function() harpoon:list():select(3) end, { desc = "Harpoon: File 3" })
+      vim.keymap.set("n", "<C-p>", function() harpoon:list():select(4) end, { desc = "Harpoon: File 4" })
     end,
+  },
+
+  -- Flash motion
+  {
+    "folke/flash.nvim",
+    event = "VeryLazy",
+    opts = {},
+    keys = {
+      { "m", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
+      { "M", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
+    },
+  },
+
+  -- Indent guides
+  {
+    "lukas-reineke/indent-blankline.nvim",
+    main = "ibl",
+    event = { "BufReadPost", "BufNewFile" },
+    opts = {
+      indent = { char = "│" },
+      scope = { enabled = false },
+    },
+  },
+
+  -- Surround operations
+  {
+    "kylechui/nvim-surround",
+    version = "*",
+    event = "VeryLazy",
+    config = true,
+  },
+
+  -- TODO comments highlighting
+  {
+    "folke/todo-comments.nvim",
+    event = { "BufReadPost", "BufNewFile" },
+    dependencies = { "nvim-lua/plenary.nvim" },
+    opts = {},
+  },
+
+  -- Auto close HTML/JSX tags
+  {
+    "windwp/nvim-ts-autotag",
+    event = { "BufReadPost", "BufNewFile" },
+    opts = {},
+  },
+
+  -- Treesitter context (sticky scroll)
+  {
+    "nvim-treesitter/nvim-treesitter-context",
+    event = { "BufReadPost", "BufNewFile" },
+    opts = {
+      max_lines = 3,
+    },
+  },
+
+  -- LSP progress UI
+  {
+    "j-hui/fidget.nvim",
+    opts = {},
   },
 
   -- Trouble diagnostics

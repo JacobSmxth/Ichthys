@@ -21,7 +21,7 @@ map("v", "<Right>", "<Nop>", opts)
 -- File ops
 map("n", "<leader>w", ":w<CR>", opts)
 map("n", "<leader>q", ":q<CR>", opts)
-map("n", "<leader>x", ":wq<CR>", opts)
+map("n", "<leader>wq", ":wq<CR>", opts)
 
 -- File tree
 map("n", "<leader>e", ":NvimTreeToggle<CR>", opts)
@@ -66,10 +66,8 @@ map("n", "L", "L", opts)
 -- Fuzzy search
 map("n", "/", ":Telescope current_buffer_fuzzy_find<CR>", opts)
 
--- Traditional search
-map("n", "?", function()
-  vim.cmd("normal! /")
-end, { noremap = true, desc = "Traditional search" })
+-- Traditional search (? searches backward in vim)
+map("n", "?", "?", { noremap = true, desc = "Traditional backward search" })
 
 -- Telescope
 map("n", "<leader>ff", ":Telescope find_files<CR>", opts)
@@ -88,6 +86,10 @@ map("n", "]q", ":cnext<CR>", opts)
 map("n", "[q", ":cprev<CR>", opts)
 
 map("i", "jj", "<Esc>", opts)
+
+-- Blank line without entering insert mode
+map("n", "<leader>o", "o<Esc>", opts)
+map("n", "<leader>O", "O<Esc>", opts)
 
 -- Buffer switch
 map("n", "<S-L>", ":bnext<CR>", opts)

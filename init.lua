@@ -135,6 +135,28 @@ vim.cmd([[
   highlight WhichKeySeparator guifg=#6a9955 ctermfg=65
   highlight WhichKeyFloat guibg=#252526 ctermbg=235
   highlight WhichKeyBorder guifg=#454545 ctermfg=238
+
+  " Indent-blankline
+  highlight IblIndent guifg=#3a3a3a gui=nocombine ctermfg=237
+  highlight IblScope guifg=#454545 gui=nocombine ctermfg=238
+
+  " TODO comments
+  highlight TodoBgTODO guifg=#1e1e1e guibg=#4fc1ff gui=bold ctermfg=234 ctermbg=81 cterm=bold
+  highlight TodoFgTODO guifg=#4fc1ff gui=bold ctermfg=81 cterm=bold
+  highlight TodoBgFIX guifg=#1e1e1e guibg=#f44747 gui=bold ctermfg=234 ctermbg=203 cterm=bold
+  highlight TodoFgFIX guifg=#f44747 gui=bold ctermfg=203 cterm=bold
+  highlight TodoBgNOTE guifg=#1e1e1e guibg=#dcdcaa gui=bold ctermfg=234 ctermbg=187 cterm=bold
+  highlight TodoFgNOTE guifg=#dcdcaa gui=bold ctermfg=187 cterm=bold
+  highlight TodoBgWARN guifg=#1e1e1e guibg=#ff8800 gui=bold ctermfg=234 ctermbg=208 cterm=bold
+  highlight TodoFgWARN guifg=#ff8800 gui=bold ctermfg=208 cterm=bold
+
+  " Treesitter context
+  highlight TreesitterContext guibg=#252526 ctermbg=235
+  highlight TreesitterContextLineNumber guifg=#858585 guibg=#252526 ctermfg=102 ctermbg=235
+
+  " Flash jump labels
+  highlight FlashLabel guifg=#000000 guibg=#ff007c gui=bold ctermfg=0 ctermbg=198 cterm=bold
+  highlight FlashMatch guifg=#4fc1ff gui=bold ctermfg=81 cterm=bold
 ]])
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"

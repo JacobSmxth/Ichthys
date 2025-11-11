@@ -41,7 +41,6 @@ o.splitbelow = true
 o.signcolumn = "yes"
 
 -- Performance opts
-o.lazyredraw = true
 o.updatetime = 250
 o.timeoutlen = 300
 

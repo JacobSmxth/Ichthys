@@ -2,7 +2,12 @@
 -- TREESITTER CONFIG - Syntax Highlighting
 -- ============================================================================
 
-require("nvim-treesitter").setup({
+local ok, configs = pcall(require, "nvim-treesitter.configs")
+if not ok then
+  return
+end
+
+configs.setup({
   -- Install parsers for these languages
   ensure_installed = {
     "c",

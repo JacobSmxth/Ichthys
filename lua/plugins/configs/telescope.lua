@@ -75,6 +75,11 @@ telescope.setup({
         return { "--hidden" }
       end,
     },
+    current_buffer_fuzzy_find = {
+      layout_config = {
+        prompt_position = "top",
+      },
+    },
   },
 
   extensions = {
