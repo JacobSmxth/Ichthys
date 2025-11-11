@@ -1,11 +1,7 @@
--- ============================================================================
--- LAZY PLUGIN SETUP - Minimal Essential Plugins Only
--- ============================================================================
+-- Plugin setup
 
 require("lazy").setup({
-  -- ============================================================================
-  -- DASHBOARD
-  -- ============================================================================
+  -- Dashboard
   {
     "nvimdev/dashboard-nvim",
     event = "VimEnter",
@@ -44,7 +40,6 @@ require("lazy").setup({
         },
       })
 
-      -- Apply VSCode-style colors to dashboard after setup
       vim.cmd([[
         highlight DashboardHeader guifg=#4fc1ff ctermfg=81
         highlight DashboardCenter guifg=#cccccc ctermfg=252
@@ -56,9 +51,7 @@ require("lazy").setup({
     end,
   },
 
-  -- ============================================================================
-  -- LSP & MASON
-  -- ============================================================================
+  -- LSP Mason
   {
     "williamboman/mason.nvim",
     config = function()
@@ -86,14 +79,11 @@ require("lazy").setup({
     config = function()
       require("mason-tool-installer").setup({
         ensure_installed = {
-          -- LSP servers
           "jdtls",
           "clangd",
-          -- "gopls",  -- Requires Go to be installed on system
           "pyright",
           "typescript-language-server",
           "rust-analyzer",
-          -- Formatters
           "google-java-format",
         },
         auto_update = false,
@@ -118,9 +108,7 @@ require("lazy").setup({
     ft = "java",
   },
 
-  -- ============================================================================
-  -- FORMATTING
-  -- ============================================================================
+  -- Formatting
   {
     "stevearc/conform.nvim",
     event = { "BufReadPre", "BufNewFile" },
@@ -128,7 +116,6 @@ require("lazy").setup({
       require("conform").setup({
         formatters_by_ft = {
           java = { "google-java-format" },
-          -- Add other formatters as needed
           python = { "isort", "black" },
           javascript = { "prettier" },
           typescript = { "prettier" },
@@ -143,18 +130,11 @@ require("lazy").setup({
             command = vim.fn.stdpath("data") .. "/mason/bin/google-java-format",
           },
         },
-        -- Format on save (optional - comment out if you don't want this)
-        -- format_on_save = {
-        --   timeout_ms = 500,
-        --   lsp_fallback = true,
-        -- },
       })
     end,
   },
 
-  -- ============================================================================
-  -- COMPLETION
-  -- ============================================================================
+  -- Completion
   {
     "hrsh7th/nvim-cmp",
     event = "InsertEnter",
@@ -182,9 +162,7 @@ require("lazy").setup({
     "saadparwaiz1/cmp_luasnip",
   },
 
-  -- ============================================================================
-  -- TREESITTER
-  -- ============================================================================
+  -- Treesitter
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
@@ -194,9 +172,7 @@ require("lazy").setup({
     end,
   },
 
-  -- ============================================================================
-  -- TELESCOPE
-  -- ============================================================================
+  -- Telescope
   {
     "nvim-telescope/telescope.nvim",
     tag = "0.1.8",
@@ -218,9 +194,7 @@ require("lazy").setup({
     "nvim-lua/plenary.nvim",
   },
 
-  -- ============================================================================
-  -- FILE EXPLORER
-  -- ============================================================================
+  -- File explorer
   {
     "nvim-tree/nvim-tree.lua",
     config = function()
@@ -228,9 +202,7 @@ require("lazy").setup({
     end,
   },
 
-  -- ============================================================================
-  -- GIT
-  -- ============================================================================
+  -- Git signs
   {
     "lewis6991/gitsigns.nvim",
     event = { "BufReadPre", "BufNewFile" },
@@ -239,9 +211,7 @@ require("lazy").setup({
     end,
   },
 
-  -- ============================================================================
-  -- AUTOPAIRS
-  -- ============================================================================
+  -- Auto pairs
   {
     "windwp/nvim-autopairs",
     event = "InsertEnter",
@@ -250,9 +220,7 @@ require("lazy").setup({
     end,
   },
 
-  -- ============================================================================
-  -- COMMENTING
-  -- ============================================================================
+  -- Commenting
   {
     "numToStr/Comment.nvim",
     event = { "BufReadPre", "BufNewFile" },
@@ -261,15 +229,47 @@ require("lazy").setup({
     end,
   },
 
-  -- ============================================================================
-  -- WHICH-KEY
-  -- ============================================================================
+  -- Harpoon marks
+  {
+    "ThePrimeagen/harpoon",
+    branch = "harpoon2",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    config = function()
+      local harpoon = require("harpoon")
+      harpoon:setup()
+
+      vim.keymap.set("n", "<leader>a", function() harpoon:list():add() end, { desc = "Harpoon: Add file" })
+
+      vim.keymap.set("n", "<C-e>", function() harpoon.ui:toggle_quick_menu(harpoon:list()) end, { desc = "Harpoon: Menu" })
+
+      -- Jump marks
+      vim.keymap.set("n", "<C-t>", function() harpoon:list():select(1) end, { desc = "Harpoon: File 1" })
+      vim.keymap.set("n", "<C-n>", function() harpoon:list():select(2) end, { desc = "Harpoon: File 2" })
+      vim.keymap.set("n", "<C-s>", function() harpoon:list():select(3) end, { desc = "Harpoon: File 3" })
+      vim.keymap.set("n", "<C-i>", function() harpoon:list():select(4) end, { desc = "Harpoon: File 4" })
+    end,
+  },
+
+  -- Trouble diagnostics
+  {
+    "folke/trouble.nvim",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    opts = {},
+    cmd = "Trouble",
+    keys = {
+      { "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>", desc = "Diagnostics (Trouble)" },
+      { "<leader>xd", "<cmd>Trouble diagnostics toggle filter.buf=0<cr>", desc = "Buffer Diagnostics" },
+      { "<leader>xq", "<cmd>Trouble qflist toggle<cr>", desc = "Quickfix List" },
+    },
+  },
+
+  -- Which-key
   {
     "folke/which-key.nvim",
     event = "VeryLazy",
     config = function()
       require("which-key").setup({
-        preset = "classic",
+        preset = "modern",
         icons = {
           breadcrumb = ">",
           separator = "->",
@@ -277,14 +277,22 @@ require("lazy").setup({
         },
         win = {
           border = "single",
+          padding = { 1, 1 },
+          wo = {
+            winblend = 0,
+          },
+        },
+        layout = {
+          height = { min = 4, max = 15 },
+          width = { min = 20, max = 50 },
+          spacing = 3,
+          align = "center",
         },
       })
     end,
   },
 
-  -- ============================================================================
-  -- TERMINAL
-  -- ============================================================================
+  -- Terminal
   {
     "akinsho/toggleterm.nvim",
     version = "*",
@@ -293,9 +301,7 @@ require("lazy").setup({
     end,
   },
 
-  -- ============================================================================
-  -- STATUSLINE
-  -- ============================================================================
+  -- Statusline
   {
     "nvim-lualine/lualine.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" },
@@ -304,9 +310,7 @@ require("lazy").setup({
     end,
   },
 
-  -- ============================================================================
-  -- WEB DEV ICONS (minimal)
-  -- ============================================================================
+  -- Dev icons
   {
     "nvim-tree/nvim-web-devicons",
     config = function()
@@ -317,7 +321,7 @@ require("lazy").setup({
     end,
   },
 }, {
-  -- Lazy.nvim config
+  -- Lazy config
   ui = {
     border = "single",
     icons = {

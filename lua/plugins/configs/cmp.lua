@@ -1,6 +1,4 @@
--- ============================================================================
--- CMP CONFIG - Completion Setup
--- ============================================================================
+-- Completion setup
 
 local cmp = require("cmp")
 local luasnip = require("luasnip")
@@ -13,20 +11,18 @@ cmp.setup({
   },
 
   mapping = cmp.mapping.preset.insert({
-    -- Scroll docs
     ["<C-b>"] = cmp.mapping.scroll_docs(-4),
     ["<C-f>"] = cmp.mapping.scroll_docs(4),
 
-    -- Trigger completion
+    -- Trigger
     ["<C-Space>"] = cmp.mapping.complete(),
 
-    -- Close completion menu
+    -- Close
     ["<C-e>"] = cmp.mapping.abort(),
 
-    -- Confirm selection
+    -- Confirm
     ["<CR>"] = cmp.mapping.confirm({ select = true }),
 
-    -- Navigate completion menu
     ["<Tab>"] = cmp.mapping(function(fallback)
       if cmp.visible() then
         cmp.select_next_item()
@@ -46,6 +42,10 @@ cmp.setup({
         fallback()
       end
     end, { "i", "s" }),
+
+    -- Vim-style nav
+    ["<C-j>"] = cmp.mapping.select_next_item(),
+    ["<C-k>"] = cmp.mapping.select_prev_item(),
   }),
 
   sources = cmp.config.sources({
@@ -66,7 +66,7 @@ cmp.setup({
 
   formatting = {
     format = function(entry, vim_item)
-      -- Simple icons for completion items
+      -- Item icons
       local kind_icons = {
         Text = "[TXT]",
         Method = "[MTH]",
@@ -106,6 +106,6 @@ cmp.setup({
   },
 
   experimental = {
-    ghost_text = false, -- Keep it minimal
+    ghost_text = false,
   },
 })

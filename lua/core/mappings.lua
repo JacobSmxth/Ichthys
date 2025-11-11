@@ -1,13 +1,8 @@
--- ============================================================================
--- CORE MAPPINGS - Global Keybindings
--- ============================================================================
+-- Global keybindings
 
 local map = vim.keymap.set
 local opts = { noremap = true, silent = true }
 
--- ============================================================================
--- DISABLE ARROW KEYS (force hjkl)
--- ============================================================================
 map("n", "<Up>", "<Nop>", opts)
 map("n", "<Down>", "<Nop>", opts)
 map("n", "<Left>", "<Nop>", opts)
@@ -23,19 +18,14 @@ map("v", "<Down>", "<Nop>", opts)
 map("v", "<Left>", "<Nop>", opts)
 map("v", "<Right>", "<Nop>", opts)
 
--- ============================================================================
--- LEADER MAPPINGS (Space as leader)
--- ============================================================================
-
--- File operations
-map("n", "<leader>w", ":w<CR>", opts)                      -- Save file
-map("n", "<leader>q", ":q<CR>", opts)                      -- Quit
-map("n", "<leader>x", ":wq<CR>", opts)                     -- Save and quit
+-- File ops
+map("n", "<leader>w", ":w<CR>", opts)
+map("n", "<leader>q", ":q<CR>", opts)
+map("n", "<leader>x", ":wq<CR>", opts)
 
 -- File tree
-map("n", "<leader>e", ":NvimTreeToggle<CR>", opts)         -- Toggle file tree
+map("n", "<leader>e", ":NvimTreeToggle<CR>", opts)
 
--- Formatting
 map("n", "<leader>f", function()
   local conform_ok, conform = pcall(require, "conform")
   if conform_ok then
@@ -49,7 +39,6 @@ map("n", "<leader>f", function()
   end
 end, { noremap = true, silent = true, desc = "Format buffer" })
 
--- Format selection in visual mode
 map("v", "<leader>f", function()
   local conform_ok, conform = pcall(require, "conform")
   if conform_ok then
@@ -63,93 +52,71 @@ map("v", "<leader>f", function()
   end
 end, { noremap = true, silent = true, desc = "Format selection" })
 
--- Fix indentation for entire file (like IntelliJ's reindent)
 map("n", "<leader>i", function()
   local view = vim.fn.winsaveview()
   vim.cmd("normal! gg=G")
   vim.fn.winrestview(view)
 end, { noremap = true, silent = true, desc = "Fix indentation" })
 
--- ============================================================================
--- SEARCH & NAVIGATION
--- ============================================================================
+-- Screen jumps
+map("n", "H", "H", opts)
+map("n", "M", "M", opts)
+map("n", "L", "L", opts)
 
--- Fuzzy search in current buffer (replaces default /)
+-- Fuzzy search
 map("n", "/", ":Telescope current_buffer_fuzzy_find<CR>", opts)
 
--- Traditional search if you need it (use ? instead)
+-- Traditional search
 map("n", "?", function()
   vim.cmd("normal! /")
 end, { noremap = true, desc = "Traditional search" })
 
--- ============================================================================
--- ESSENTIAL MAPPINGS
--- ============================================================================
-
--- jj to escape insert mode
-map("i", "jj", "<Esc>", opts)
+-- Telescope
+map("n", "<leader>ff", ":Telescope find_files<CR>", opts)
+map("n", "<leader>fg", ":Telescope live_grep<CR>", opts)
+map("n", "<leader>fb", ":Telescope buffers<CR>", opts)
+map("n", "<leader>fh", ":Telescope help_tags<CR>", opts)
+map("n", "<leader>fr", ":Telescope oldfiles<CR>", opts)
+map("n", "<leader>fc", ":Telescope commands<CR>", opts)
 
 -- Buffer navigation
-map("n", "<S-L>", ":bnext<CR>", opts)                      -- Next buffer
-map("n", "<S-H>", ":bprevious<CR>", opts)                  -- Previous buffer
+map("n", "<leader><leader>", "<C-^>", opts)
+map("n", "<leader>bd", ":bdelete<CR>", opts)
 
--- Clear search highlight
+-- Quickfix
+map("n", "]q", ":cnext<CR>", opts)
+map("n", "[q", ":cprev<CR>", opts)
+
+map("i", "jj", "<Esc>", opts)
+
+-- Buffer switch
+map("n", "<S-L>", ":bnext<CR>", opts)
+map("n", "<S-H>", ":bprevious<CR>", opts)
+
 map("n", "<Esc>", ":noh<CR>", opts)
 
--- Better window navigation
 map("n", "<C-h>", "<C-w>h", opts)
 map("n", "<C-j>", "<C-w>j", opts)
 map("n", "<C-k>", "<C-w>k", opts)
 map("n", "<C-l>", "<C-w>l", opts)
 
--- Stay in indent mode
+-- Window splits
+map("n", "<leader>sv", ":vsplit<CR>", opts)
+map("n", "<leader>sh", ":split<CR>", opts)
+map("n", "<leader>sc", ":close<CR>", opts)
+
+map("n", "<C-Up>", ":resize +2<CR>", opts)
+map("n", "<C-Down>", ":resize -2<CR>", opts)
+map("n", "<C-Left>", ":vertical resize -2<CR>", opts)
+map("n", "<C-Right>", ":vertical resize +2<CR>", opts)
+
 map("v", "<", "<gv", opts)
 map("v", ">", ">gv", opts)
 
--- Move text up and down
 map("v", "J", ":m '>+1<CR>gv=gv", opts)
 map("v", "K", ":m '<-2<CR>gv=gv", opts)
 
--- ============================================================================
--- LSP MAPPINGS (set on attach in lsp.lua)
--- ============================================================================
--- These are defined in lua/plugins/configs/lsp.lua on_attach:
---   gd - Go to definition
---   gr - Find references
---   K - Hover documentation
---   <leader>rn - Rename symbol
---   <leader>ca - Code action
---   <leader>oi - Organize imports (Java only)
+-- LSP mappings in lsp.lua:
+--   gd, gr, K, <leader>rn, <leader>ca, <leader>oi
 
--- ============================================================================
--- LANGUAGE-SPECIFIC MAPPINGS (defined in ftplugin/<language>.lua)
--- ============================================================================
--- JAVA (ftplugin/java.lua):
---   <leader>jc - Compile current Java file
---   <leader>jr - Compile and run (auto-detect main)
---   <leader>jm - Compile and run (specify main class)
---   <leader>jg - Run with Gradle (bootRun for Spring Boot)
---   <leader>jb - Build with Gradle
---   <leader>jt - Run tests with Gradle
---
--- C (ftplugin/c.lua):
---   <leader>cc - Compile with gcc
---   <leader>cr - Compile and run
---   <leader>cd - Compile with debug symbols
---   <leader>cx - Run compiled executable
---   <leader>cm - Build with make
---   <leader>cM - Clean make build
---
--- C++ (ftplugin/cpp.lua):
---   <leader>cc - Compile with g++
---   <leader>cr - Compile and run
---   <leader>cd - Compile with debug symbols
---   <leader>cx - Run compiled executable
---   <leader>cm - Build with make
---   <leader>cM - Clean make build
-
--- ============================================================================
--- COMMENT MAPPINGS (provided by Comment.nvim)
--- ============================================================================
--- gcc - Toggle line comment
--- gc in visual - Toggle block comment
+-- Language mappings in ftplugin/*.lua

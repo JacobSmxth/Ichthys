@@ -1,27 +1,24 @@
--- ============================================================================
--- CORE OPTIONS - Hacker Config Performance Settings
--- ============================================================================
+-- Performance-focused settings
 
 local o = vim.opt
 
 -- Line numbers
-o.number = true            -- absolute line numbers
-o.relativenumber = true    -- relative line numbers
+o.number = true
+o.relativenumber = true
 
--- Tab/indent settings (2 spaces default, matches google-java-format)
-o.expandtab = true         -- spaces instead of tabs
-o.shiftwidth = 2           -- indent size
-o.tabstop = 2              -- tab width
-o.softtabstop = 2          -- backspace over spaces
-o.smartindent = true       -- smart autoindenting
+-- 2 space indent
+o.expandtab = true
+o.shiftwidth = 2
+o.tabstop = 2
+o.softtabstop = 2
+o.smartindent = true
 
--- Disable mouse
-o.mouse = ""               -- no mouse support
+-- No mouse
+o.mouse = ""
 
--- Clipboard
-o.clipboard = "unnamedplus" -- system clipboard integration
+-- System clipboard
+o.clipboard = "unnamedplus"
 
--- Undo persistence
 local undodir = vim.fn.stdpath("cache") .. "/undo"
 vim.fn.mkdir(undodir, "p")
 o.undodir = undodir
@@ -29,48 +26,48 @@ o.undofile = true
 o.undolevels = 1000
 o.undoreload = 10000
 
--- Cursorline
-o.cursorline = true        -- highlight current line
+-- Cursorline highlight
+o.cursorline = true
 
--- Scrolling
-o.scrolloff = 8            -- keep 8 lines above/below cursor
-o.sidescrolloff = 8        -- keep 8 columns left/right of cursor
+-- Keep context
+o.scrolloff = 8
+o.sidescrolloff = 8
 
--- Splits
-o.splitright = true        -- vertical split to right
-o.splitbelow = true        -- horizontal split below
+-- Split directions
+o.splitright = true
+o.splitbelow = true
 
--- Signcolumn
-o.signcolumn = "yes"       -- always show signcolumn
+-- Always signcolumn
+o.signcolumn = "yes"
 
--- Performance
-o.lazyredraw = true        -- faster macro execution
-o.updatetime = 250         -- faster completion
-o.timeoutlen = 300         -- faster key sequence completion
+-- Performance opts
+o.lazyredraw = true
+o.updatetime = 250
+o.timeoutlen = 300
 
--- Search
-o.ignorecase = true        -- case insensitive search
-o.smartcase = true         -- case sensitive if uppercase present
-o.hlsearch = true          -- highlight search results
-o.incsearch = true         -- incremental search
+-- Search settings
+o.ignorecase = true
+o.smartcase = true
+o.hlsearch = true
+o.incsearch = true
 
--- UI
-o.wrap = false             -- no line wrap
-o.termguicolors = true     -- true-color support
-o.showmode = false         -- hide mode (shown in statusline)
-o.showtabline = 1          -- show tabline only if tabs exist
-o.conceallevel = 0         -- show concealed text
-o.pumheight = 10           -- popup menu height
+-- UI preferences
+o.wrap = false
+o.termguicolors = true
+o.showmode = false
+o.showtabline = 1
+o.conceallevel = 0
+o.pumheight = 10
 
--- Files
-o.backup = false           -- no backup file
-o.writebackup = false      -- no backup file while editing
-o.swapfile = false         -- no swap file
+-- No swap/backup
+o.backup = false
+o.writebackup = false
+o.swapfile = false
 
--- Simple green statusline: mode | file | line:col | filetype
+-- Simple statusline
 o.statusline = "%#StatusLine# %{toupper(mode())} %#StatusLineNC#| %f %m %= %l:%c | %Y "
-o.laststatus = 2           -- always show statusline
+o.laststatus = 2
 
--- Leader key
-vim.g.mapleader = " "      -- space as leader key
+-- Space leader
+vim.g.mapleader = " "
 vim.g.maplocalleader = " "

@@ -1,13 +1,9 @@
--- ============================================================================
--- NVIM-TREE CONFIG - File Explorer
--- ============================================================================
+-- File explorer
 
 require("nvim-tree").setup({
-  -- Disable netrw
   disable_netrw = true,
   hijack_netrw = true,
 
-  -- View settings
   view = {
     side = "left",
     width = 30,
@@ -16,14 +12,11 @@ require("nvim-tree").setup({
     signcolumn = "yes",
   },
 
-  -- Custom keybindings
   on_attach = function(bufnr)
     local api = require("nvim-tree.api")
 
-    -- Default mappings
     api.config.mappings.default_on_attach(bufnr)
 
-    -- Custom mapping: fuzzy search with telescope
     vim.keymap.set("n", "f", function()
       require("telescope.builtin").find_files({
         cwd = vim.fn.getcwd(),
@@ -31,12 +24,20 @@ require("nvim-tree").setup({
       })
     end, { buffer = bufnr, desc = "Fuzzy find files" })
 
-    -- Alternative: use / for search (vim-like)
     vim.keymap.set("n", "/", function()
       require("telescope.builtin").live_grep({
         cwd = vim.fn.getcwd(),
       })
     end, { buffer = bufnr, desc = "Fuzzy search content" })
+
+    -- Find directories
+    vim.keymap.set("n", "c", function()
+      require("telescope.builtin").find_files({
+        cwd = vim.fn.getcwd(),
+        hidden = false,
+        find_command = { "fd", "--type", "d", "--hidden", "--exclude", ".git" },
+      })
+    end, { buffer = bufnr, desc = "Fuzzy find directories" })
   end,
 
   -- Renderer

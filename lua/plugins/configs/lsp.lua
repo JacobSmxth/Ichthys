@@ -1,20 +1,13 @@
--- ============================================================================
--- LSP CONFIG - Mason + Multi-Language LSP Setup (Neovim 0.11+ API)
--- ============================================================================
+-- LSP configuration
 
--- Get completion capabilities from nvim-cmp
 local caps_ok, cmp_caps = pcall(require, "cmp_nvim_lsp")
 local capabilities = caps_ok and cmp_caps.default_capabilities() or vim.lsp.protocol.make_client_capabilities()
 
--- ============================================================================
--- LSP ON_ATTACH - Keybindings for non-Java servers
--- ============================================================================
 local on_attach = function(_, bufnr)
   local map = function(mode, lhs, rhs, desc)
     vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, silent = true, desc = desc })
   end
 
-  -- LSP mappings
   map("n", "gd", vim.lsp.buf.definition, "LSP: Go to Definition")
   map("n", "gr", vim.lsp.buf.references, "LSP: References")
   map("n", "K", vim.lsp.buf.hover, "LSP: Hover")
@@ -22,16 +15,10 @@ local on_attach = function(_, bufnr)
   map("n", "<leader>ca", vim.lsp.buf.code_action, "LSP: Code Action")
 end
 
--- ============================================================================
--- NON-JAVA LSP SERVERS (using vim.lsp.config API)
--- ============================================================================
-
--- Helper function to enable LSP for configured servers
 local function enable_lsp(name)
   vim.lsp.enable(name)
 end
 
--- C/C++
 vim.lsp.config.clangd = {
   cmd = { "clangd" },
   filetypes = { "c", "cpp", "objc", "objcpp", "cuda" },
@@ -41,7 +28,6 @@ vim.lsp.config.clangd = {
 }
 enable_lsp("clangd")
 
--- Go (only if gopls is available)
 if vim.fn.executable("gopls") == 1 then
   vim.lsp.config.gopls = {
     cmd = { "gopls" },
@@ -53,7 +39,6 @@ if vim.fn.executable("gopls") == 1 then
   enable_lsp("gopls")
 end
 
--- Python
 vim.lsp.config.pyright = {
   cmd = { "pyright-langserver", "--stdio" },
   filetypes = { "python" },
@@ -63,7 +48,6 @@ vim.lsp.config.pyright = {
 }
 enable_lsp("pyright")
 
--- TypeScript/JavaScript
 vim.lsp.config.ts_ls = {
   cmd = { "typescript-language-server", "--stdio" },
   filetypes = { "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx" },
@@ -73,7 +57,6 @@ vim.lsp.config.ts_ls = {
 }
 enable_lsp("ts_ls")
 
--- Rust
 vim.lsp.config.rust_analyzer = {
   cmd = { "rust-analyzer" },
   filetypes = { "rust" },
@@ -93,9 +76,6 @@ vim.lsp.config.rust_analyzer = {
 }
 enable_lsp("rust_analyzer")
 
--- ============================================================================
--- JAVA LSP - nvim-jdtls (separate workspace per project)
--- ============================================================================
 local function setup_java()
   local ok, jdtls = pcall(require, "jdtls")
   if not ok then
@@ -103,7 +83,6 @@ local function setup_java()
     return
   end
 
-  -- Find project root
   local root_dir = require("jdtls.setup").find_root({
     "gradlew",
     "mvnw",
@@ -117,27 +96,22 @@ local function setup_java()
     return
   end
 
-  -- Mason binary path
   local mason_bin = vim.fn.stdpath("data") .. "/mason/bin"
   local jdtls_bin = mason_bin .. "/jdtls"
 
-  -- Workspace directory (separate per project)
   local workspace_dir = vim.fn.expand("~/.local/share/eclipse-workspaces/") .. vim.fn.fnamemodify(root_dir, ":p:h:t")
 
-  -- Java-specific on_attach with organize imports
   local java_on_attach = function(_, bufnr)
     local map = function(mode, lhs, rhs, desc)
       vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, silent = true, desc = desc })
     end
 
-    -- Standard LSP mappings
     map("n", "gd", vim.lsp.buf.definition, "LSP: Go to Definition")
     map("n", "gr", vim.lsp.buf.references, "LSP: References")
     map("n", "K", vim.lsp.buf.hover, "LSP: Hover")
     map("n", "<leader>rn", vim.lsp.buf.rename, "LSP: Rename")
     map("n", "<leader>ca", vim.lsp.buf.code_action, "LSP: Code Action")
 
-    -- Java-specific: organize imports
     map("n", "<leader>oi", function()
       require("jdtls").organize_imports()
     end, "Java: Organize Imports")
@@ -152,7 +126,6 @@ local function setup_java()
       java = {
         configuration = {
           updateBuildConfiguration = "interactive",
-          -- Configure Java 21 runtime
           runtimes = {
             {
               name = "JavaSE-21",
@@ -162,7 +135,7 @@ local function setup_java()
           },
         },
         format = {
-          enabled = false, -- Use conform.nvim instead
+          enabled = false,
         },
         signatureHelp = {
           enabled = true,
@@ -180,7 +153,7 @@ local function setup_java()
   jdtls.start_or_attach(config)
 end
 
--- Auto-start jdtls for Java files
+-- Auto-start jdtls
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "java",
   callback = setup_java,
