@@ -1,3 +1,8 @@
+vim.bo.shiftwidth = 4
+vim.bo.tabstop = 4
+vim.bo.softtabstop = 4
+vim.bo.expandtab = true
+
 local map = vim.keymap.set
 local opts = { buffer = true, silent = true }
 local ok, jdtls = pcall(require, "jdtls")
@@ -38,6 +43,41 @@ local config = {
   init_options = { bundles = {} },
 }
 
+local function get_class_name()
+  return vim.fn.expand("%:t:r")
+end
+
+-- Set up compile/run commands (always available)
+map("n", "<leader>cc", function()
+  vim.cmd("w")
+  vim.cmd("!javac %")
+end, vim.tbl_extend("force", opts, { desc = "Java: Compile" }))
+
+map("n", "<leader>cr", function()
+  vim.cmd("w")
+  local file = vim.fn.expand("%")
+  local class = get_class_name()
+  vim.cmd(string.format("TermExec cmd='clear && javac \"%s\" 2>&1 && java %s'", file, class))
+end, vim.tbl_extend("force", opts, { desc = "Java: Compile and run" }))
+
+map("n", "<leader>cg", function()
+  vim.cmd(string.format("TermExec cmd='clear && cd %s && ./gradlew bootRun'", root_dir))
+end, vim.tbl_extend("force", opts, { desc = "Java: Gradle bootRun" }))
+
+map("n", "<leader>cb", function()
+  vim.cmd(string.format("TermExec cmd='clear && cd %s && ./gradlew build'", root_dir))
+end, vim.tbl_extend("force", opts, { desc = "Java: Gradle build" }))
+
+map("n", "<leader>ct", function()
+  vim.cmd(string.format("TermExec cmd='clear && cd %s && ./gradlew test'", root_dir))
+end, vim.tbl_extend("force", opts, { desc = "Java: Gradle test" }))
+
+map("n", "<leader>cf", function()
+  vim.cmd("w")
+  require("conform").format({ bufnr = vim.api.nvim_get_current_buf() })
+  vim.cmd("e")
+end, vim.tbl_extend("force", opts, { desc = "Java: Format" }))
+
 jdtls.start_or_attach(config)
 
 vim.api.nvim_create_autocmd("LspAttach", {
@@ -55,46 +95,6 @@ vim.api.nvim_create_autocmd("LspAttach", {
     map("n", "K", vim.lsp.buf.hover, { buffer = bufnr, desc = "LSP: Hover" })
     map("n", "<leader>rn", vim.lsp.buf.rename, { buffer = bufnr, desc = "LSP: Rename" })
     map("n", "<leader>ca", vim.lsp.buf.code_action, { buffer = bufnr, desc = "LSP: Code Action" })
-    map("n", "<leader>oi", require("jdtls").organize_imports, { buffer = bufnr, desc = "Java: Organize Imports" })
+    map("n", "<leader>ci", require("jdtls").organize_imports, { buffer = bufnr, desc = "Java: Organize Imports" })
   end,
 })
-
-local function get_class_name()
-  return vim.fn.expand("%:t:r")
-end
-
-map("n", "<leader>cc", function()
-  vim.cmd("w")
-  vim.cmd("!javac %")
-end, vim.tbl_extend("force", opts, { desc = "Java: Compile" }))
-
-map("n", "<leader>cr", function()
-  vim.cmd("w")
-  local file = vim.fn.expand("%")
-  local class = get_class_name()
-  vim.cmd(string.format("TermExec cmd='clear && javac %s 2>&1 && java %s'", file, class))
-end, vim.tbl_extend("force", opts, { desc = "Java: Compile and run" }))
-
-map("n", "<leader>cg", function()
-  vim.cmd(string.format("TermExec cmd='clear && cd %s && ./gradlew bootRun'", root_dir))
-end, vim.tbl_extend("force", opts, { desc = "Java: Gradle bootRun" }))
-
-map("n", "<leader>cb", function()
-  vim.cmd(string.format("TermExec cmd='clear && cd %s && ./gradlew build'", root_dir))
-end, vim.tbl_extend("force", opts, { desc = "Java: Gradle build" }))
-
-map("n", "<leader>ct", function()
-  vim.cmd(string.format("TermExec cmd='clear && cd %s && ./gradlew test'", root_dir))
-end, vim.tbl_extend("force", opts, { desc = "Java: Gradle test" }))
-
-map("n", "<leader>ci", function()
-  require("jdtls").organize_imports()
-end, vim.tbl_extend("force", opts, { desc = "Java: Organize imports" }))
-
-map("n", "<leader>ca", vim.lsp.buf.code_action, vim.tbl_extend("force", opts, { desc = "Java: Code action" }))
-
-map("n", "<leader>cf", function()
-  vim.cmd("w")
-  require("conform").format({ bufnr = vim.api.nvim_get_current_buf() })
-  vim.cmd("e")
-end, vim.tbl_extend("force", opts, { desc = "Java: Format" }))
