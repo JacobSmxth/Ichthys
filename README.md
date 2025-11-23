@@ -134,6 +134,17 @@ Select inside and jump to end:
 | `Ctrl+x` | Clear suggestion |
 | `<leader>ot` | Toggle Codeium on/off |
 
+### Claude AI Assistant (Built-in)
+
+| Keybind | Description |
+|---------|-------------|
+| `<leader>ce` | Explain selected code (visual mode) |
+| `<leader>cq` | Ask Claude a question (opens prompt) |
+
+**Commands (alternative):**
+- `:Explain` - Explain selected code (visual mode)
+- `:Guide <query>` - Get AI guidance on any topic
+
 ### Windows
 
 | Keybind | Description |
@@ -254,6 +265,14 @@ Language-specific adapters auto-configured:
 - **todo-comments.nvim** - Highlight TODO/FIX/NOTE/WARN
 - **fidget.nvim** - LSP progress notifications
 
+### AI Assistant
+- **claude** - Built-in Claude AI plugin for code explanations and guidance
+  - `:Explain` - Explain highlighted code in visual mode
+  - `:Guide <query>` - Get AI help on any development topic
+  - Async API calls (non-blocking)
+  - Markdown responses with syntax highlighting
+  - Requires `ANTHROPIC_API_KEY` environment variable
+
 ---
 
 ## Configuration Structure
@@ -267,6 +286,10 @@ Language-specific adapters auto-configured:
 │   │   ├── mappings.lua       # Keybindings
 │   │   ├── autocmds.lua       # Auto-commands
 │   │   └── appearance.lua     # Theme & font configuration
+│   ├── claude/                # Claude AI plugin
+│   │   ├── init.lua          # Main plugin logic
+│   │   ├── api.lua           # Claude API client
+│   │   └── ui.lua            # Response display
 │   └── plugins/
 │       ├── lazy_setup.lua     # Plugin definitions
 │       └── configs/           # Plugin configurations
@@ -274,6 +297,8 @@ Language-specific adapters auto-configured:
 │           ├── telescope.lua
 │           ├── cmp.lua
 │           └── ...
+├── plugin/
+│   └── claude.lua             # Auto-loads Claude plugin
 └── ftplugin/                   # Filetype-specific configs
     ├── java.lua
     ├── python.lua
@@ -284,6 +309,35 @@ Language-specific adapters auto-configured:
 ---
 
 ## Custom Settings & Personalization
+
+### Claude AI Setup **NEW**
+
+The built-in Claude plugin provides code explanations and development guidance.
+
+**Setup (one-time):**
+```bash
+# Add to your ~/.bashrc or ~/.zshrc
+export ANTHROPIC_API_KEY="your-api-key-here"
+```
+
+**Usage:**
+1. **Explain Code**:
+   - Highlight code with `v` / `V` / `Ctrl-v`
+   - Type `:Explain` and press Enter
+   - Get intelligent explanation in markdown split
+
+2. **Get Guidance**:
+   - Type `:Guide <your question>`
+   - Examples:
+     - `:Guide how to use vim motions`
+     - `:Guide build a shell in C`
+     - `:Guide explain async/await in JavaScript`
+
+**Features:**
+- Non-blocking async API calls
+- Markdown-formatted responses
+- Filetype-aware code explanations
+- Press `q` to close response window
 
 ### Theme Configuration **UNIQUE**
 Easily customize your color theme with the appearance configuration system:
@@ -473,6 +527,7 @@ nvim --startuptime startup.log +q && cat startup.log
 - **Ripgrep** (for telescope live_grep)
 - **Make** (for telescope-fzf-native)
 - **Node.js** (for some LSP servers)
+- **curl** (for Claude AI plugin)
 - **LazyGit** (optional, for `<leader>gg`)
 - **Nerd Font** (for icons)
 
@@ -486,6 +541,10 @@ mv ~/.config/nvim ~/.config/nvim.backup
 
 # Clone this config
 git clone https://github.com/JacobSmxth/Ichthys ~/.config/nvim
+
+# Set up Claude AI (optional but recommended)
+export ANTHROPIC_API_KEY="your-api-key-here"
+echo 'export ANTHROPIC_API_KEY="your-key"' >> ~/.bashrc  # or ~/.zshrc
 
 # Open nvim - plugins auto-install
 nvim

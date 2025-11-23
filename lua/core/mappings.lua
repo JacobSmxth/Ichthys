@@ -195,5 +195,15 @@ map("n", "gi>", "vi>o<Esc>", { noremap = true, silent = true, desc = "Go inner >
 map("n", "[d", vim.diagnostic.goto_prev, { noremap = true, silent = true, desc = "Previous diagnostic" })
 map("n", "]d", vim.diagnostic.goto_next, { noremap = true, silent = true, desc = "Next diagnostic" })
 
+-- Claude AI mappings
+map("v", "<leader>ce", ":'<,'>Explain<CR>", { noremap = true, silent = true, desc = "Claude: Explain code" })
+map("n", "<leader>cq", function()
+  vim.ui.input({ prompt = "Ask Claude: " }, function(input)
+    if input and input ~= "" then
+      vim.cmd("Guide " .. input)
+    end
+  end)
+end, { noremap = true, silent = true, desc = "Claude: Ask question" })
+
 -- Note: For full reload, restart nvim or use :Lazy reload <plugin>
 -- This mapping has been removed - just restart nvim for config changes
