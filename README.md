@@ -316,9 +316,32 @@ The built-in Claude plugin provides code explanations and development guidance.
 
 **Setup (one-time):**
 ```bash
-# Add to your ~/.bashrc or ~/.zshrc
-export ANTHROPIC_API_KEY="your-api-key-here"
+# RECOMMENDED: Create a separate private file for API keys
+# This keeps secrets out of your shell config files
+mkdir -p ~/.zsh
+touch ~/.zsh/.zshenv_private
+chmod 600 ~/.zsh/.zshenv_private  # Restrict permissions
+
+# Add your API key to the private file
+echo 'export ANTHROPIC_API_KEY="your-api-key-here"' >> ~/.zsh/.zshenv_private
+
+# Source it in your ~/.zshrc (add this line if not already present)
+echo 'if [[ -f "$HOME/.zsh/.zshenv_private" ]]; then' >> ~/.zshrc
+echo '  source "$HOME/.zsh/.zshenv_private"' >> ~/.zshrc
+echo 'fi' >> ~/.zshrc
+
+# For bash users, create and source a similar file
+touch ~/.bash_private
+chmod 600 ~/.bash_private
+echo 'export ANTHROPIC_API_KEY="your-api-key-here"' >> ~/.bash_private
+echo '[ -f ~/.bash_private ] && source ~/.bash_private' >> ~/.bashrc
 ```
+
+**Why use a separate private file?**
+- Keeps API keys out of version-controlled dotfiles
+- Easier to manage multiple secrets in one place
+- Prevents accidental exposure when sharing shell configs
+- Simple to add to `.gitignore` if you track your dotfiles
 
 **Usage:**
 1. **Explain Code**:
@@ -543,8 +566,10 @@ mv ~/.config/nvim ~/.config/nvim.backup
 git clone https://github.com/JacobSmxth/Ichthys ~/.config/nvim
 
 # Set up Claude AI (optional but recommended)
-export ANTHROPIC_API_KEY="your-api-key-here"
-echo 'export ANTHROPIC_API_KEY="your-key"' >> ~/.bashrc  # or ~/.zshrc
+# Create a private file for API keys (more secure than adding to shell configs)
+mkdir -p ~/.zsh && touch ~/.zsh/.zshenv_private && chmod 600 ~/.zsh/.zshenv_private
+echo 'export ANTHROPIC_API_KEY="your-key"' >> ~/.zsh/.zshenv_private
+echo 'if [[ -f "$HOME/.zsh/.zshenv_private" ]]; then source "$HOME/.zsh/.zshenv_private"; fi' >> ~/.zshrc
 
 # Open nvim - plugins auto-install
 nvim
