@@ -154,12 +154,12 @@ Select inside and jump to end:
 | `<leader>wq` | Close window |
 | `<leader>wo` | Close other windows |
 
-### Hop (Motion)
+### Flash (Motion)
 
 | Keybind | Description |
 |---------|-------------|
-| `m` | Hop to word |
-| `M` | Hop to line |
+| `m` | Flash jump (jump to any word/location) |
+| `M` | Flash Treesitter (syntax-aware jump) |
 
 ### REST Client (Kulala)
 
@@ -168,6 +168,22 @@ Select inside and jump to end:
 | `<leader>kr` | Run request (.http files) |
 | `<leader>kt` | Toggle headers/body |
 | `<leader>kc` | Copy as cURL |
+
+### Dev Dashboard
+
+| Keybind | Description |
+|---------|-------------|
+| `<leader>d` | Open Dev Dashboard (git, diagnostics, TODOs, system info) |
+
+**Dashboard Controls:**
+- `q` - Close dashboard
+- `r` - Refresh dashboard
+
+**Shows:**
+- Git branch, ahead/behind, status
+- LSP diagnostics (errors/warnings with top issues)
+- TODO/FIXME/HACK/NOTE/XXX/BUG comments in current project
+- System info (memory, CPU load, disk usage)
 
 ### Debugging (DAP)
 
@@ -211,10 +227,13 @@ Every plugin is **lazy-loaded** and serves a specific purpose. No bloat, no unus
 - **telescope.nvim** - Fuzzy finder for everything
 - **harpoon** - ThePrimeagen's quick file bookmarks (harpoon2)
 - **aerial.nvim** - LSP-powered code outline sidebar
-- **lualine.nvim** - Fast, customizable statusline
+- **lualine.nvim** - Enhanced statusline with LSP status, macro recording, search count
 - **which-key.nvim** - Popup showing keybind options
-- **indent-blankline.nvim** - Subtle indent guides
-- **nvim-web-devicons** - File type icons
+- **mini.indentscope** - Animated indent scope guides
+- **mini.icons** - Modern icon support
+- **nvim-web-devicons** - File type icons (compatibility)
+- **noice.nvim** - Better UI for messages, cmdline, and popups
+- **nvim-notify** - Beautiful notification system with animations
 
 ### LSP & Completion
 - **mason.nvim** - Package manager for LSP servers, formatters, linters, debuggers
@@ -235,11 +254,11 @@ Every plugin is **lazy-loaded** and serves a specific purpose. No bloat, no unus
 - **gitsigns.nvim** - Git changes in sign column with inline blame
 - **lazygit.nvim** - Full-featured git TUI inside Neovim
 
-### Editing Enhancements
-- **nvim-autopairs** - Auto-close brackets/quotes with smart rules
-- **Comment.nvim** - Toggle comments with `gc`
-- **nvim-surround** - Add/change/delete surrounding pairs
-- **hop.nvim** - EasyMotion-style navigation
+### Editing Enhancements (Mini.nvim Suite)
+- **mini.pairs** - Auto-close brackets/quotes with smart rules
+- **mini.comment** - Toggle comments with `gc` and `gcc`
+- **mini.surround** - Add/change/delete surrounding pairs (`sa`, `sd`, `sr`)
+- **flash.nvim** - Advanced motion plugin with treesitter support
 
 ### Debugging (DAP)
 All languages have full debugging support:
@@ -264,6 +283,7 @@ Language-specific adapters auto-configured:
 - **render-markdown.nvim** - Live markdown preview
 - **todo-comments.nvim** - Highlight TODO/FIX/NOTE/WARN
 - **fidget.nvim** - LSP progress notifications
+- **dev-dash** (custom) - Developer dashboard showing git, diagnostics, TODOs, system info
 
 ### AI Assistant
 - **claude** - Built-in Claude AI plugin for code explanations and guidance
@@ -296,6 +316,8 @@ Language-specific adapters auto-configured:
 │           ├── lsp.lua
 │           ├── telescope.lua
 │           ├── cmp.lua
+│           ├── lualine.lua
+│           ├── dev-dash.lua
 │           └── ...
 ├── plugin/
 │   └── claude.lua             # Auto-loads Claude plugin
@@ -698,9 +720,10 @@ Select inside text object and jump to end (custom implementation):
 
 **Editing:**
 - `<leader>i` → Fix indentation for entire file
-- `gc` → Comment/uncomment (Comment.nvim)
-- `m` → Hop to word (EasyMotion-style)
-- `M` → Hop to line
+- `gc` / `gcc` → Comment/uncomment (mini.comment)
+- `sa` / `sd` / `sr` → Surround add/delete/replace (mini.surround)
+- `m` → Flash jump to word
+- `M` → Flash Treesitter (syntax-aware jump)
 
 **Windows:**
 - `<leader>wv` → Vertical split
@@ -710,6 +733,11 @@ Select inside text object and jump to end (custom implementation):
 
 **Git:**
 - `<leader>gg` → Open LazyGit
+
+**Dev Dashboard:**
+- `<leader>d` → Open developer dashboard (git status, diagnostics, TODOs, system info)
+  - `q` in dashboard → Close
+  - `r` in dashboard → Refresh
 
 **Debugging (DAP):**
 - `<leader>db` → Toggle breakpoint
@@ -905,5 +933,34 @@ See "Plugins" section above for full list. Every plugin is **lazy-loaded** for p
 - **6 lines sticky scroll** (treesitter-context)
 - **0 swap files** ever created
 - **∞ undo history** (persisted across sessions)
+
+### New in Latest Update
+
+**Dev Dashboard (`<leader>d`):**
+- Quick project overview with git status, diagnostics, TODOs, and system info
+- Real-time refresh capability
+- Searches only current project for TODOs
+
+**Enhanced Lualine:**
+- Shows active LSP servers
+- Displays Codeium status when disabled
+- Macro recording indicator
+- Search result counter
+- File size and selection count
+
+**Mini.nvim Suite:**
+- Replaced 5 plugins with lightweight mini.nvim modules
+- `mini.pairs`, `mini.comment`, `mini.surround`, `mini.indentscope`, `mini.icons`
+- Better performance, consistent APIs
+
+**Flash Motion:**
+- Replaced hop.nvim with more powerful flash.nvim
+- Treesitter-aware jumping
+- Better labeling algorithm
+
+**Better UI:**
+- `noice.nvim` for fancy command-line and messages
+- `nvim-notify` for beautiful notification animations
+- Filters out annoying messages automatically
 
 This config turns Neovim into a **full IDE** while keeping the modal editing and performance that makes Neovim special.

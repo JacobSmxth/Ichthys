@@ -205,5 +205,10 @@ map("n", "<leader>cq", function()
   end)
 end, { noremap = true, silent = true, desc = "Claude: Ask question" })
 
+-- Dev Dashboard
+map("n", "<leader>d", function()
+  require("plugins.configs.dev-dash").open_dashboard()
+end, { noremap = true, silent = true, desc = "Open Dev Dashboard" })
+
 -- Note: For full reload, restart nvim or use :Lazy reload <plugin>
 -- This mapping has been removed - just restart nvim for config changes

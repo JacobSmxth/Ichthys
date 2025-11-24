@@ -539,35 +539,87 @@ require("lazy").setup({
     },
   },
 
-  -- Auto pairs
+  -- Mini.nvim modules
   {
-    "windwp/nvim-autopairs",
+    "echasnovski/mini.pairs",
     event = "InsertEnter",
     config = function()
-      require("plugins.configs.autopairs")
+      require("mini.pairs").setup()
     end,
   },
 
-  -- Commenting
   {
-    "numToStr/Comment.nvim",
+    "echasnovski/mini.comment",
     event = { "BufReadPre", "BufNewFile" },
     config = function()
-      require("Comment").setup()
+      require("mini.comment").setup({
+        options = {
+          custom_commentstring = nil,
+        },
+        mappings = {
+          comment = "gc",
+          comment_line = "gcc",
+          comment_visual = "gc",
+          textobject = "gc",
+        },
+      })
     end,
   },
 
-  -- Hop motion (simpler alternative to flash)
   {
-    "smoka7/hop.nvim",
-    version = "*",
-    keys = {
-      { "m", "<cmd>HopWord<cr>", mode = { "n", "x", "o" }, desc = "Hop to word" },
-      { "M", "<cmd>HopLine<cr>", mode = { "n", "x", "o" }, desc = "Hop to line" },
-    },
+    "echasnovski/mini.surround",
+    event = "VeryLazy",
+    config = function()
+      require("mini.surround").setup({
+        mappings = {
+          add = "sa",
+          delete = "sd",
+          find = "sf",
+          find_left = "sF",
+          highlight = "sh",
+          replace = "sr",
+          update_n_lines = "sn",
+        },
+      })
+    end,
+  },
+
+  {
+    "echasnovski/mini.indentscope",
+    event = { "BufReadPost", "BufNewFile" },
+    config = function()
+      require("mini.indentscope").setup({
+        symbol = "│",
+        options = { try_as_border = true },
+        draw = {
+          delay = 100,
+          animation = require("mini.indentscope").gen_animation.none(),
+        },
+      })
+    end,
+  },
+
+  {
+    "echasnovski/mini.icons",
+    config = function()
+      require("mini.icons").setup()
+    end,
+  },
+
+  -- Flash motion
+  {
+    "folke/flash.nvim",
+    event = "VeryLazy",
     opts = {
-      keys = "etovxqpdygfblzhckisuran",
-      jump_on_sole_occurrence = true,
+      modes = {
+        char = {
+          enabled = false,
+        },
+      },
+    },
+    keys = {
+      { "m", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
+      { "M", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
     },
   },
 
@@ -593,24 +645,6 @@ require("lazy").setup({
     end,
   },
 
-  -- Indent guides
-  {
-    "lukas-reineke/indent-blankline.nvim",
-    main = "ibl",
-    event = { "BufReadPost", "BufNewFile" },
-    opts = {
-      indent = { char = "│" },
-      scope = { enabled = false },
-    },
-  },
-
-  -- Surround operations
-  {
-    "kylechui/nvim-surround",
-    version = "*",
-    event = "VeryLazy",
-    config = true,
-  },
 
   -- TODO comments highlighting
   {
@@ -716,6 +750,113 @@ require("lazy").setup({
     opts = {},
   },
 
+  -- Notification manager
+  {
+    "rcarriga/nvim-notify",
+    config = function()
+      local notify = require("notify")
+      notify.setup({
+        background_colour = "#000000",
+        fps = 60,
+        icons = {
+          DEBUG = "[D]",
+          ERROR = "[E]",
+          INFO = "[I]",
+          TRACE = "[T]",
+          WARN = "[W]",
+        },
+        level = 2,
+        minimum_width = 50,
+        render = "compact",
+        stages = "fade_in_slide_out",
+        timeout = 3000,
+        top_down = true,
+      })
+      vim.notify = notify
+    end,
+  },
+
+  -- Better UI for messages, cmdline and popupmenu
+  {
+    "folke/noice.nvim",
+    event = "VeryLazy",
+    dependencies = {
+      "MunifTanjim/nui.nvim",
+      "rcarriga/nvim-notify",
+    },
+    config = function()
+      require("noice").setup({
+        lsp = {
+          override = {
+            ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
+            ["vim.lsp.util.stylize_markdown"] = true,
+            ["cmp.entry.get_documentation"] = true,
+          },
+          signature = {
+            enabled = false,
+          },
+          hover = {
+            enabled = true,
+            silent = false,
+          },
+        },
+        presets = {
+          bottom_search = true,
+          command_palette = true,
+          long_message_to_split = true,
+          inc_rename = false,
+          lsp_doc_border = true,
+        },
+        messages = {
+          enabled = true,
+          view = "notify",
+          view_error = "notify",
+          view_warn = "notify",
+          view_history = "messages",
+          view_search = "virtualtext",
+        },
+        cmdline = {
+          enabled = true,
+          view = "cmdline_popup",
+          format = {
+            cmdline = { pattern = "^:", icon = ":", lang = "vim" },
+            search_down = { kind = "search", pattern = "^/", icon = "/", lang = "regex" },
+            search_up = { kind = "search", pattern = "^%?", icon = "?", lang = "regex" },
+            filter = { pattern = "^:%s*!", icon = "$", lang = "bash" },
+            lua = { pattern = { "^:%s*lua%s+", "^:%s*lua%s*=%s*", "^:%s*=%s*" }, icon = "", lang = "lua" },
+            help = { pattern = "^:%s*he?l?p?%s+", icon = "?" },
+          },
+        },
+        routes = {
+          {
+            filter = {
+              event = "msg_show",
+              any = {
+                { find = "%d+L, %d+B" },
+                { find = "; after #%d+" },
+                { find = "; before #%d+" },
+                { find = "Restored session" },
+                { find = "lines yanked" },
+              },
+            },
+            view = "mini",
+          },
+          {
+            filter = {
+              event = "notify",
+              find = "No information available",
+            },
+            opts = { skip = true },
+          },
+        },
+      })
+    end,
+  },
+
+  {
+    "MunifTanjim/nui.nvim",
+  },
+
   -- Trouble diagnostics
   {
     "folke/trouble.nvim",
@@ -769,7 +910,6 @@ require("lazy").setup({
         { "<leader>x", group = "Trouble/Diagnostics" },
         { "<leader>w", group = "Window" },
         { "<leader>o", group = "Options/Other" },
-        { "<leader>d", group = "Debug (DAP)" },
         { "<leader>c", group = "Code/Compile (filetype)" },
 
         -- Common LSP actions
@@ -808,6 +948,9 @@ require("lazy").setup({
         { "<leader>/", desc = "Fuzzy Find in Buffer" },
         { "<leader>oi", desc = "Organize Imports (Java)" },
         { "<leader>ot", desc = "Toggle Codeium" },
+
+        -- Dev Dashboard (standalone, DAP uses <leader>db, dc, etc.)
+        { "<leader>d", desc = "Dev Dashboard" },
       })
     end,
   },
@@ -975,15 +1118,9 @@ require("lazy").setup({
     end,
   },
 
-  -- Dev icons
+  -- Dev icons (kept for plugin compatibility, mini.icons used where possible)
   {
     "nvim-tree/nvim-web-devicons",
-    config = function()
-      require("nvim-web-devicons").setup({
-        override = {},
-        default = true,
-      })
-    end,
   },
 }, {
   -- Lazy config
