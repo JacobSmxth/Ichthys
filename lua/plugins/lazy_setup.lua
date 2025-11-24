@@ -900,6 +900,17 @@ require("lazy").setup({
             },
             opts = { skip = true },
           },
+          {
+            filter = {
+              event = "msg_show",
+              kind = "",
+              any = {
+                { find = "Type number and <Enter>" },
+                { find = "or click with the mouse" },
+              },
+            },
+            opts = { skip = true },
+          },
         },
       })
     end,
@@ -963,6 +974,8 @@ require("lazy").setup({
         { "<leader>w", group = "Window" },
         { "<leader>o", group = "Options/Other" },
         { "<leader>c", group = "Code/Compile (filetype)" },
+        { "<leader>t", group = "Tasks (Overseer)" },
+        { "<leader>r", group = "Refactor" },
 
         -- Common LSP actions (lspsaga)
         { "<leader>ca", desc = "Code Action" },
@@ -1163,6 +1176,182 @@ require("lazy").setup({
     "mfussenegger/nvim-dap-python",
     dependencies = { "mfussenegger/nvim-dap" },
     ft = "python",
+  },
+
+  -- Refactoring tools
+  {
+    "ThePrimeagen/refactoring.nvim",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-treesitter/nvim-treesitter",
+    },
+    keys = {
+      { "<leader>re", mode = { "x", "n" }, function() require("refactoring").refactor("Extract Function") end, desc = "Extract Function" },
+      { "<leader>rf", mode = "x", function() require("refactoring").refactor("Extract Function To File") end, desc = "Extract Function to File" },
+      { "<leader>rv", mode = "x", function() require("refactoring").refactor("Extract Variable") end, desc = "Extract Variable" },
+      { "<leader>ri", mode = { "x", "n" }, function() require("refactoring").refactor("Inline Variable") end, desc = "Inline Variable" },
+      { "<leader>rb", mode = "n", function() require("refactoring").refactor("Extract Block") end, desc = "Extract Block" },
+      { "<leader>rbf", mode = "n", function() require("refactoring").refactor("Extract Block To File") end, desc = "Extract Block to File" },
+      { "<leader>rr", mode = { "x", "n" }, function() require("refactoring").select_refactor() end, desc = "Select Refactor" },
+    },
+    config = function()
+      require("refactoring").setup({
+        prompt_func_return_type = {
+          go = false,
+          java = false,
+          cpp = false,
+          c = false,
+          h = false,
+          hpp = false,
+          cxx = false,
+        },
+        prompt_func_param_type = {
+          go = false,
+          java = false,
+          cpp = false,
+          c = false,
+          h = false,
+          hpp = false,
+          cxx = false,
+        },
+        printf_statements = {},
+        print_var_statements = {},
+      })
+    end,
+  },
+
+  -- Dressing (UI for vim.ui.select/input - used by overseer, LSP, etc.)
+  {
+    "stevearc/dressing.nvim",
+    event = "VeryLazy",
+    dependencies = { "nvim-telescope/telescope.nvim" },
+    config = function()
+      require("dressing").setup({
+        input = {
+          enabled = true,
+          default_prompt = "Input:",
+          title_pos = "left",
+          border = "single",
+          relative = "cursor",
+          prefer_width = 40,
+          width = nil,
+          max_width = { 140, 0.9 },
+          min_width = { 20, 0.2 },
+          win_options = {
+            winblend = 0,
+          },
+        },
+        select = {
+          enabled = true,
+          backend = { "telescope", "builtin" },
+          telescope = require("telescope.themes").get_dropdown({
+            borderchars = {
+              prompt = { "─", "│", " ", "│", "┌", "┐", "│", "│" },
+              results = { "─", "│", "─", "│", "├", "┤", "┘", "└" },
+              preview = { "─", "│", "─", "│", "┌", "┐", "┘", "└" },
+            },
+          }),
+          builtin = {
+            border = "single",
+            relative = "editor",
+            win_options = {
+              winblend = 0,
+            },
+          },
+          get_config = function(opts)
+            -- Use telescope for code actions and overseer tasks
+            if opts.kind == "codeaction" or opts.prompt and opts.prompt:match("Task") then
+              return { backend = "telescope" }
+            end
+          end,
+        },
+      })
+    end,
+  },
+
+  -- Task runner (unified UI for Gradle/Maven/NPM/Make)
+  {
+    "stevearc/overseer.nvim",
+    cmd = { "OverseerRun", "OverseerToggle", "OverseerInfo" },
+    dependencies = { "stevearc/dressing.nvim" },
+    keys = {
+      { "<leader>tr", "<cmd>OverseerRun<cr>", desc = "Run Task" },
+      { "<leader>tt", "<cmd>OverseerToggle<cr>", desc = "Toggle Task List" },
+      { "<leader>ti", "<cmd>OverseerInfo<cr>", desc = "Task Info" },
+      { "<leader>ta", "<cmd>OverseerTaskAction<cr>", desc = "Task Actions" },
+    },
+    config = function()
+      require("overseer").setup({
+        strategy = {
+          "toggleterm",
+          direction = "horizontal",
+          open_on_start = true,
+          quit_on_exit = "success",
+        },
+        templates = { "builtin", "user.gradle", "user.maven", "user.npm", "user.make" },
+        form = {
+          border = "single",
+          win_opts = {
+            winblend = 0,
+            zindex = 60,
+          },
+        },
+        task_editor = {
+          border = "single",
+          win_opts = {
+            zindex = 60,
+          },
+        },
+        confirm = {
+          border = "single",
+          win_opts = {
+            zindex = 60,
+          },
+        },
+        task_win = {
+          win_opts = {
+            winblend = 0,
+          },
+        },
+        task_list = {
+          direction = "bottom",
+          min_height = 15,
+          max_height = 25,
+          default_detail = 1,
+          bindings = {
+            ["?"] = "ShowHelp",
+            ["g?"] = "ShowHelp",
+            ["<CR>"] = "RunAction",
+            ["<C-e>"] = "Edit",
+            ["o"] = "Open",
+            ["<C-v>"] = "OpenVsplit",
+            ["<C-s>"] = "OpenSplit",
+            ["<C-f>"] = "OpenFloat",
+            ["<C-q>"] = "OpenQuickFix",
+            ["p"] = "TogglePreview",
+            ["<C-l>"] = "IncreaseDetail",
+            ["<C-h>"] = "DecreaseDetail",
+            ["L"] = "IncreaseAllDetail",
+            ["H"] = "DecreaseAllDetail",
+            ["["] = "DecreaseWidth",
+            ["]"] = "IncreaseWidth",
+            ["{"] = "PrevTask",
+            ["}"] = "NextTask",
+            ["<C-k>"] = "ScrollOutputUp",
+            ["<C-j>"] = "ScrollOutputDown",
+          },
+        },
+        component_aliases = {
+          default = {
+            { "display_duration", detail_level = 2 },
+            "on_output_summarize",
+            "on_exit_set_status",
+            "on_complete_notify",
+            "on_complete_dispose",
+          },
+        },
+      })
+    end,
   },
 
   -- Statusline

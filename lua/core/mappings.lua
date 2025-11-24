@@ -150,6 +150,9 @@ map("i", "jj", "<Esc>", opts)
 -- Terminal mode escape
 map("t", "jj", "<C-\\><C-n>", opts)
 
+-- Paste from system clipboard in command mode
+map("c", "<C-v>", "<C-r>+", { noremap = true, desc = "Paste from system clipboard" })
+
 map("n", "<S-L>", ":bnext<CR>", opts)
 map("n", "<S-H>", ":bprevious<CR>", opts)
 map("n", "<leader>bd", ":bdelete<CR>", { noremap = true, silent = true, desc = "Delete buffer" })
