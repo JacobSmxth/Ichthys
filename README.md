@@ -145,6 +145,20 @@ Select inside and jump to end:
 - `:Explain` - Explain selected code (visual mode)
 - `:Guide <query>` - Get AI guidance on any topic
 
+### AI Refactoring (Ollama)
+
+| Keybind | Description |
+|---------|-------------|
+| `<leader>ra` | AI-powered refactoring (visual mode) |
+
+**Commands:**
+- `:AIRefactor` - Analyze and refactor selected code
+
+**Actions (when refactor UI is open):**
+- `a` - Accept refactoring
+- `r` - Reject refactoring
+- `q` - Close without changes
+
 ### Windows
 
 | Keybind | Description |
@@ -205,11 +219,21 @@ Select inside and jump to end:
 | `<leader>xd` | Buffer diagnostics |
 | `<leader>xq` | Quickfix list |
 
+### Task Runner (Overseer)
+
+| Keybind | Description |
+|---------|-------------|
+| `<leader>tr` | Run task (Gradle/Maven/NPM/Make) |
+| `<leader>tt` | Toggle task list |
+| `<leader>ti` | Task info |
+| `<leader>ta` | Task actions |
+
 ### Other
 
 | Keybind | Description |
 |---------|-------------|
 | `<leader>u` | Undo tree |
+| `<leader>z` | Toggle Zen Mode |
 | `Ctrl+\` | Toggle terminal |
 | `Esc` | Clear search highlight |
 
@@ -225,6 +249,7 @@ Every plugin is **lazy-loaded** and serves a specific purpose. No bloat, no unus
 - **nvim-tree.lua** - Traditional file tree explorer
 - **oil.nvim** - Edit filesystem like a buffer (modern alternative)
 - **telescope.nvim** - Fuzzy finder for everything
+- **dressing.nvim** - Telescope-based UI for vim.ui.select/input (overseer tasks, LSP actions)
 - **harpoon** - ThePrimeagen's quick file bookmarks (harpoon2)
 - **aerial.nvim** - LSP-powered code outline sidebar
 - **lualine.nvim** - Enhanced statusline with LSP status, macro recording, search count
@@ -279,10 +304,12 @@ Language-specific adapters auto-configured:
 - **telescope-undo.nvim** - Visual undo tree with Telescope
 - **trouble.nvim** - Beautiful diagnostics/quickfix list
 - **toggleterm.nvim** - Floating/split terminals
+- **overseer.nvim** - Task runner with unified UI for Gradle/Maven/NPM/Make
 - **kulala.nvim** - REST client for .http files
 - **render-markdown.nvim** - Live markdown preview
 - **todo-comments.nvim** - Highlight TODO/FIX/NOTE/WARN
 - **fidget.nvim** - LSP progress notifications
+- **zen-mode.nvim** - Distraction-free focus mode
 - **dev-dash** (custom) - Developer dashboard showing git, diagnostics, TODOs, system info
 
 ### AI Assistant
@@ -292,6 +319,13 @@ Language-specific adapters auto-configured:
   - Async API calls (non-blocking)
   - Markdown responses with syntax highlighting
   - Requires `ANTHROPIC_API_KEY` environment variable
+- **airefactor** - Ollama-powered code refactoring with approval workflow
+  - `:AIRefactor` - Get AI refactoring suggestions
+  - Side-by-side comparison (original vs refactored)
+  - Detailed explanations and change lists
+  - Approve/reject workflow
+  - Uses qwen3-coder:30b model
+  - Requires Ollama running locally
 
 ---
 
@@ -310,6 +344,10 @@ Language-specific adapters auto-configured:
 │   │   ├── init.lua          # Main plugin logic
 │   │   ├── api.lua           # Claude API client
 │   │   └── ui.lua            # Response display
+│   ├── airefactor/            # AI Refactor plugin (Ollama)
+│   │   ├── init.lua          # Main refactor logic
+│   │   ├── api.lua           # Ollama API client
+│   │   └── ui.lua            # Refactor UI (side-by-side diff)
 │   └── plugins/
 │       ├── lazy_setup.lua     # Plugin definitions
 │       └── configs/           # Plugin configurations
@@ -320,7 +358,8 @@ Language-specific adapters auto-configured:
 │           ├── dev-dash.lua
 │           └── ...
 ├── plugin/
-│   └── claude.lua             # Auto-loads Claude plugin
+│   ├── claude.lua             # Auto-loads Claude plugin
+│   └── airefactor.lua         # Auto-loads AIRefactor plugin
 └── ftplugin/                   # Filetype-specific configs
     ├── java.lua
     ├── python.lua
@@ -332,7 +371,63 @@ Language-specific adapters auto-configured:
 
 ## Custom Settings & Personalization
 
-### Claude AI Setup **NEW**
+### AI Refactoring with Ollama Setup **NEW**
+
+The built-in AIRefactor plugin provides intelligent code refactoring suggestions using Ollama.
+
+**Setup (one-time):**
+```bash
+# Install Ollama (if not already installed)
+curl -fsSL https://ollama.com/install.sh | sh
+
+# Pull the qwen3-coder model
+ollama pull qwen3-coder:30b
+
+# Start Ollama (runs as a service)
+ollama serve
+```
+
+**Usage:**
+1. **Refactor Code**:
+   - Highlight code with `v` / `V` / `Ctrl-v`
+   - Press `<leader>ra` or type `:AIRefactor`
+   - Wait for AI analysis
+
+2. **Review Suggestions**:
+   - View side-by-side comparison (original vs refactored)
+   - Read explanation and list of changes
+   - If no refactoring needed, AI will tell you
+
+3. **Accept or Reject**:
+   - Press `a` to accept and apply changes
+   - Press `r` to reject and keep original
+   - Press `q` to close without action
+
+**Features:**
+- Smart refactoring detection (only suggests when beneficial)
+- Detailed explanations of why changes improve code
+- Side-by-side diff view
+- **Drop-in replacement**: Refactored code is exact replacement for selected snippet
+- Import suggestions listed separately (add manually if needed)
+- Non-destructive (must explicitly accept)
+- Works with all languages
+- Uses local Ollama (no cloud API needed)
+
+**Customization:**
+Change the Ollama model in `~/.config/nvim/.preferences`:
+```bash
+echo "ollama_model=codellama:13b" >> ~/.config/nvim/.preferences
+```
+
+Or edit `/home/jsmitty/.config/nvim/plugin/airefactor.lua` to change:
+- Host: `http://localhost:11434` (default)
+- Timeout: 60 seconds (default)
+
+**Note:** If Ollama is not installed or not running, AIRefactor will be automatically disabled and hidden from which-key.
+
+---
+
+### Claude AI Setup
 
 The built-in Claude plugin provides code explanations and development guidance.
 
@@ -408,19 +503,35 @@ To change default permanently, edit `lua/core/appearance.lua`:
 M.selected_theme = "kanagawa"    -- Change default theme
 ```
 
-### Mouse Toggle System **UNIQUE**
-Simple file-based mouse control for flexibility:
+### Preferences System **UNIQUE**
+
+All user preferences are stored in `~/.config/nvim/.preferences` in a simple key=value format.
+
+**Available preferences:**
+- `mouse` - Enable/disable mouse (true/false, default: false)
+- `ollama_model` - Ollama model for AIRefactor (default: qwen3-coder:30b)
+
 ```bash
-# Check current setting
-cat ~/.config/nvim/.mouse
+# View preferences
+cat ~/.config/nvim/.preferences
 
 # Enable mouse
-echo "true" > ~/.config/nvim/.mouse
+echo "mouse=true" > ~/.config/nvim/.preferences
 
 # Disable mouse (default)
-echo "false" > ~/.config/nvim/.mouse
+echo "mouse=false" > ~/.config/nvim/.preferences
+
+# Change Ollama model
+echo "ollama_model=codellama:13b" >> ~/.config/nvim/.preferences
 ```
-Then restart Neovim. Any value other than `true` = disabled.
+
+**Example `.preferences` file:**
+```
+mouse=false
+ollama_model=qwen3-coder:30b
+```
+
+Then restart Neovim. The old `.mouse` file is automatically migrated to `.preferences` on first load.
 
 ### General Settings
 - **Line numbers**: Relative + absolute hybrid
@@ -771,6 +882,9 @@ Select inside text object and jump to end (custom implementation):
 - `Alt+h` / `Alt+l` → Cycle suggestions
 - `Ctrl+x` → Clear suggestion
 
+**AI Refactoring (Ollama):**
+- `<leader>ra` → AI refactor selected code (visual mode)
+
 ### Editor Behavior Changes
 
 #### Line Numbers
@@ -961,6 +1075,25 @@ See "Plugins" section above for full list. Every plugin is **lazy-loaded** for p
 **Better UI:**
 - `noice.nvim` for fancy command-line and messages
 - `nvim-notify` for beautiful notification animations
+- `dressing.nvim` for telescope-based select/input prompts
 - Filters out annoying messages automatically
+
+**Task Runner:**
+- `overseer.nvim` with custom templates for Gradle, Maven, NPM, and Make
+- Unified UI for running build tasks across different project types
+- Integrates with toggleterm for task output
+
+**Zen Mode:**
+- `zen-mode.nvim` for distraction-free coding
+- Disables diagnostics and UI elements when focused
+- `<leader>z` to toggle
+
+**AI-Powered Refactoring:**
+- `airefactor` plugin using Ollama and qwen3-coder:30b
+- Intelligent code analysis with refactoring suggestions
+- Side-by-side diff view with detailed explanations
+- Approve/reject workflow for safe refactoring
+- Works offline with local Ollama instance
+- `<leader>ra` to refactor selected code
 
 This config turns Neovim into a **full IDE** while keeping the modal editing and performance that makes Neovim special.

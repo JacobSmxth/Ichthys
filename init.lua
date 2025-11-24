@@ -14,6 +14,7 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 -- Core config
+require("core.migrate_preferences")
 require("core.options")
 require("core.mappings")
 require("core.autocmds")

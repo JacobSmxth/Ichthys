@@ -13,17 +13,9 @@ o.tabstop = 2
 o.softtabstop = 2
 o.smartindent = true
 
--- Mouse configuration (controlled by .mouse file)
-local mouse_file = vim.fn.stdpath("config") .. "/.mouse"
-local mouse_enabled = false
-
-if vim.fn.filereadable(mouse_file) == 1 then
-  local content = vim.fn.readfile(mouse_file)[1]
-  if content and content:lower():match("^%s*true%s*$") then
-    mouse_enabled = true
-  end
-end
-
+-- Mouse configuration (controlled by preferences)
+local prefs = require("core.preferences")
+local mouse_enabled = prefs.get("mouse") == "true"
 o.mouse = mouse_enabled and "a" or ""
 
 -- System clipboard

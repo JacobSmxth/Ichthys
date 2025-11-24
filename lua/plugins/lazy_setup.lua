@@ -961,8 +961,12 @@ require("lazy").setup({
         },
       })
 
+      -- Check for Ollama availability
+      local prefs = require("core.preferences")
+      local ollama_available = prefs.check_ollama()
+
       -- Register key group descriptions
-      wk.add({
+      local keys = {
         -- Main leader groups
         { "<leader>f", group = "Find (Telescope)" },
         { "<leader>b", group = "Buffers" },
@@ -1020,7 +1024,13 @@ require("lazy").setup({
 
         -- Zen Mode
         { "<leader>z", desc = "Toggle Zen Mode" },
-      })
+      }
+
+      if ollama_available then
+        table.insert(keys, { "<leader>ra", desc = "AI Refactor (Ollama)" })
+      end
+
+      wk.add(keys)
     end,
   },
 
