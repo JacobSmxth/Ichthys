@@ -191,10 +191,6 @@ map("n", "gi]", "vi]o<Esc>", { noremap = true, silent = true, desc = "Go inner ]
 map("n", "gi<", "vi<o<Esc>", { noremap = true, silent = true, desc = "Go inner <" })
 map("n", "gi>", "vi>o<Esc>", { noremap = true, silent = true, desc = "Go inner >" })
 
--- Diagnostic navigation (not LSP-specific, always available)
-map("n", "[d", vim.diagnostic.goto_prev, { noremap = true, silent = true, desc = "Previous diagnostic" })
-map("n", "]d", vim.diagnostic.goto_next, { noremap = true, silent = true, desc = "Next diagnostic" })
-
 -- Claude AI mappings
 map("v", "<leader>ce", ":'<,'>Explain<CR>", { noremap = true, silent = true, desc = "Claude: Explain code" })
 map("n", "<leader>cq", function()

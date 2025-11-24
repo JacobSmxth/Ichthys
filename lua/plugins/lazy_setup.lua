@@ -161,9 +161,61 @@ require("lazy").setup({
     dependencies = {
       "williamboman/mason.nvim",
       "williamboman/mason-lspconfig.nvim",
+      "nvimdev/lspsaga.nvim",
     },
     config = function()
       require("plugins.configs.lsp")
+    end,
+  },
+
+  -- LSP UI enhancements
+  {
+    "nvimdev/lspsaga.nvim",
+    event = "LspAttach",
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter",
+      "nvim-tree/nvim-web-devicons",
+    },
+    config = function()
+      require("lspsaga").setup({
+        ui = {
+          border = "single",
+          code_action = "",
+        },
+        lightbulb = {
+          enable = false,
+          sign = false,
+          virtual_text = false,
+        },
+        symbol_in_winbar = {
+          enable = false,
+        },
+        outline = {
+          win_width = 40,
+          auto_preview = false,
+        },
+      })
+
+      -- Override native LSP keybindings with lspsaga
+      vim.api.nvim_create_autocmd("LspAttach", {
+        callback = function(args)
+          local bufnr = args.buf
+          local map = function(mode, lhs, rhs, desc)
+            vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, silent = true, desc = desc })
+          end
+
+          -- Replace with lspsaga equivalents
+          map("n", "gh", "<cmd>Lspsaga hover_doc<cr>", "Hover documentation")
+          map("n", "gd", "<cmd>Lspsaga goto_definition<cr>", "Go to definition")
+          map("n", "gD", "<cmd>Lspsaga peek_definition<cr>", "Peek definition")
+          map("n", "gr", "<cmd>Lspsaga finder<cr>", "LSP Finder (references/impl)")
+          map("n", "<leader>rn", "<cmd>Lspsaga rename<cr>", "Rename symbol")
+          map("n", "<leader>ca", "<cmd>Lspsaga code_action<cr>", "Code action")
+          map("n", "[d", "<cmd>Lspsaga diagnostic_jump_prev<cr>", "Previous diagnostic")
+          map("n", "]d", "<cmd>Lspsaga diagnostic_jump_next<cr>", "Next diagnostic")
+          map("n", "<leader>lo", "<cmd>Lspsaga outline<cr>", "Toggle outline")
+        end,
+      })
     end,
   },
 
@@ -906,15 +958,16 @@ require("lazy").setup({
         { "<leader>g", group = "Git" },
         { "<leader>h", group = "Harpoon" },
         { "<leader>k", group = "Kulala (REST)" },
-        { "<leader>l", group = "LSP" },
+        { "<leader>l", group = "LSP/Lspsaga" },
         { "<leader>x", group = "Trouble/Diagnostics" },
         { "<leader>w", group = "Window" },
         { "<leader>o", group = "Options/Other" },
         { "<leader>c", group = "Code/Compile (filetype)" },
 
-        -- Common LSP actions
+        -- Common LSP actions (lspsaga)
         { "<leader>ca", desc = "Code Action" },
         { "<leader>rn", desc = "Rename Symbol" },
+        { "<leader>lo", desc = "Toggle Lspsaga Outline" },
 
         -- Git operations
         { "<leader>gg", desc = "Open Lazygit" },
@@ -951,6 +1004,9 @@ require("lazy").setup({
 
         -- Dev Dashboard (standalone, DAP uses <leader>db, dc, etc.)
         { "<leader>d", desc = "Dev Dashboard" },
+
+        -- Zen Mode
+        { "<leader>z", desc = "Toggle Zen Mode" },
       })
     end,
   },
@@ -1121,6 +1177,54 @@ require("lazy").setup({
   -- Dev icons (kept for plugin compatibility, mini.icons used where possible)
   {
     "nvim-tree/nvim-web-devicons",
+  },
+
+  -- Zen Mode (distraction-free focus mode)
+  {
+    "folke/zen-mode.nvim",
+    cmd = "ZenMode",
+    keys = {
+      { "<leader>z", "<cmd>ZenMode<cr>", desc = "Toggle Zen Mode" },
+    },
+    opts = {
+      window = {
+        backdrop = 0.95,
+        width = 120,
+        height = 1,
+        options = {
+          signcolumn = "no",
+          number = false,
+          relativenumber = false,
+          cursorline = false,
+          cursorcolumn = false,
+          foldcolumn = "0",
+          list = false,
+        },
+      },
+      plugins = {
+        options = {
+          enabled = true,
+          ruler = false,
+          showcmd = false,
+          laststatus = 0,
+        },
+        twilight = { enabled = false },
+        gitsigns = { enabled = false },
+        tmux = { enabled = false },
+        kitty = {
+          enabled = false,
+          font = "+4",
+        },
+      },
+      on_open = function(win)
+        -- Disable diagnostics in zen mode
+        vim.diagnostic.disable()
+      end,
+      on_close = function()
+        -- Re-enable diagnostics
+        vim.diagnostic.enable()
+      end,
+    },
   },
 }, {
   -- Lazy config

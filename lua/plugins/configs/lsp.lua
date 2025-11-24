@@ -23,15 +23,6 @@ local function on_attach(client, bufnr)
   if client.server_capabilities.inlayHintProvider then
     vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
   end
-
-  -- Enable code lens if supported
-  if client.server_capabilities.codeLensProvider then
-    vim.api.nvim_create_autocmd({ "BufEnter", "CursorHold", "InsertLeave" }, {
-      buffer = bufnr,
-      callback = vim.lsp.codelens.refresh,
-    })
-    map("n", "<leader>cl", vim.lsp.codelens.run, "Run code lens")
-  end
 end
 
 -- Helper to setup LSP server
