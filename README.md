@@ -11,7 +11,8 @@ This is not a general-purpose Neovim distribution. It's a **personalized, produc
 - **Backend & Systems Development**: Java, C/C++, C#, Go, Python
 - **Web Development**: TypeScript/JavaScript, React, HTML/CSS/SCSS
 - **DevOps & Scripting**: Bash/Zsh, Lua
-- **Maximum Performance**: 69ms startup with 50+ plugins through aggressive lazy loading
+- **Maximum Performance**: 67ms startup with 50+ plugins through aggressive lazy loading
+- **AI-Powered Refactoring**: Local Ollama integration for intelligent code improvements
 - **Modern APIs**: Uses Neovim 0.11+ native LSP features that most configs haven't adopted yet
 - **Complete Debugging**: Full DAP support for all languages (not just demos)
 - **Faith-Centered**: Built with intentionality to honor God through excellence
@@ -19,14 +20,14 @@ This is not a general-purpose Neovim distribution. It's a **personalized, produc
 ## Features
 
 - **Bleeding-edge Neovim 0.11+** with new native LSP APIs (`vim.lsp.config`, `vim.lsp.enable`)
-- **Lightning-fast startup** (69ms) through strategic lazy loading
+- **Lightning-fast startup** (67ms average) through strategic lazy loading
 - **9 language environments**: Java, C/C++, C#, Go, Python, TypeScript/JavaScript, HTML/CSS/SCSS, Bash/Zsh, Lua
 - **Production-ready debugging** with DAP adapters for every language
-- **AI-powered completion** via Codeium
+- **AI-powered tools**: Codeium completion + Ollama refactoring + Claude explanations
 - **Git workflow** integration with LazyGit + Gitsigns
 - **Smart project sessions** with auto-save/restore and git branch awareness
 - **6 beautiful color themes** with easy switching (gruvbox-material, catppuccin, kanagawa, tokyonight, etc.)
-- **Mouse toggle system** - enable/disable via config file
+- **Unified preferences system** - `.preferences` file for mouse, Ollama model, and more
 
 ---
 
@@ -654,12 +655,19 @@ Buffers, splits, window positions, folds, tabs, terminal windows, and local opti
 
 ## Performance
 
-**Startup Time**: 69ms (measured with `time nvim +q`)
+**Startup Time**: 67ms average (measured with hyperfine over 100 runs)
 
 - Bare Neovim: 20-30ms
-- This config: 69ms (50+ plugins, lazy loaded)
+- This config: **67ms** (50+ plugins, lazy loaded)
 - Most configs: 100-300ms
 - Heavy configs: 500ms+
+
+**Benchmark Results:**
+```
+Benchmark 1: nvim +q
+  Time (mean ± σ):      66.9 ms ±   6.1 ms    [User: 50.6 ms, System: 15.6 ms]
+  Range (min … max):    56.3 ms …  82.9 ms    100 runs
+```
 
 ### Benchmark Your Config
 
@@ -720,10 +728,11 @@ nvim
 
 ### My Approach
 1. **Personalized**: Only languages I use = faster everything
-2. **Performance-obsessed**: 69ms startup through strategic lazy loading
+2. **Performance-obsessed**: 67ms startup through strategic lazy loading and optimization
 3. **Modern**: Neovim 0.11+ APIs that most configs haven't adopted
 4. **Production-ready**: Every language has LSP + formatter + linter + debugger
-5. **Faith-centered**: Built with intentionality to glorify God
+5. **AI-Enhanced**: Local Ollama refactoring without sacrificing performance
+6. **Faith-centered**: Built with intentionality to glorify God
 
 ### Design Principles
 - **No bloat**: If I don't use it, it's not here
@@ -760,7 +769,7 @@ This is my **personal** config. I encourage you to:
 4. Adjust the theme
 5. Make it yours
 
-The `.mouse` file system and "go inner" operators are examples of how to personalize beyond just changing options.
+The `.preferences` file system and "go inner" operators are examples of how to personalize beyond just changing options.
 
 ---
 
@@ -772,7 +781,7 @@ This is a comprehensive list of **every change** from stock Neovim. Perfect for 
 
 #### Disabled Keys (Training Wheels Off)
 - **Arrow keys** - Disabled in normal, insert, and visual modes (forces hjkl)
-- **Mouse** - Disabled by default (toggle via `.mouse` file)
+- **Mouse** - Disabled by default (toggle via `.preferences` file)
 
 #### Custom Escape & Navigation
 - `jj` → Escape (insert and terminal modes)
@@ -937,7 +946,7 @@ Select inside text object and jump to end (custom implementation):
 - **Disabled runtime plugins**: gzip, tarPlugin, tohtml, tutor, zipPlugin
 
 #### Mouse
-- **Disabled by default** - Toggle via `~/.config/nvim/.mouse` file
+- **Disabled by default** - Toggle via `~/.config/nvim/.preferences` file (set `mouse=true` or `mouse=false`)
 
 ### Auto-Commands
 
@@ -1007,13 +1016,19 @@ See "Plugins" section above for full list. Every plugin is **lazy-loaded** for p
 ```
 ~/.config/nvim/
 ├── init.lua                  # Entry point
-├── .mouse                    # Mouse toggle (true/false)
+├── .preferences              # User preferences (mouse, ollama_model)
 ├── lua/
 │   ├── core/
 │   │   ├── options.lua      # All vim options
 │   │   ├── mappings.lua     # All keybindings
 │   │   ├── autocmds.lua     # Auto-commands
-│   │   └── appearance.lua   # Theme & font configuration
+│   │   ├── appearance.lua   # Theme & font configuration
+│   │   ├── preferences.lua  # Preferences system
+│   │   └── migrate_preferences.lua  # Auto-migrate old .mouse file
+│   ├── airefactor/          # AI Refactor plugin (Ollama)
+│   │   ├── init.lua
+│   │   ├── api.lua
+│   │   └── ui.lua
 │   └── plugins/
 │       ├── lazy_setup.lua   # All plugin definitions
 │       └── configs/         # Plugin configurations
@@ -1022,6 +1037,8 @@ See "Plugins" section above for full list. Every plugin is **lazy-loaded** for p
 │           ├── telescope.lua
 │           ├── codeium.lua
 │           └── ...
+├── plugin/
+│   └── airefactor.lua       # Auto-load AIRefactor if Ollama available
 └── ftplugin/                 # Language-specific configs
     ├── java.lua
     ├── python.lua
@@ -1043,7 +1060,8 @@ See "Plugins" section above for full list. Every plugin is **lazy-loaded** for p
 - **50+ plugins** installed
 - **9 language environments** fully configured
 - **100+ custom keybindings**
-- **69ms startup time**
+- **67ms startup time** (benchmarked over 100 runs)
+- **3 AI tools** (Codeium, Ollama, Claude)
 - **6 lines sticky scroll** (treesitter-context)
 - **0 swap files** ever created
 - **∞ undo history** (persisted across sessions)

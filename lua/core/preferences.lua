@@ -60,16 +60,7 @@ function M.check_ollama()
   local result = handle:read("*a")
   handle:close()
 
-  if result and result ~= "" then
-    local check_handle = io.popen("curl -s http://localhost:11434/api/tags 2>/dev/null")
-    if check_handle then
-      local check_result = check_handle:read("*a")
-      check_handle:close()
-      return check_result and check_result:match('"models"')
-    end
-  end
-
-  return false
+  return result and result ~= ""
 end
 
 return M
