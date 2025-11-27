@@ -126,11 +126,22 @@ Select inside and jump to end:
 
 **Example**: `gi{` in a function will select all content inside braces and place cursor at the end.
 
+### Completion (nvim-cmp)
+
+| Keybind | Description |
+|---------|-------------|
+| `<Tab>` | Next completion item |
+| `<S-Tab>` | Previous completion item |
+| `<CR>` | Confirm selection |
+| `<C-j>` / `<C-k>` | Next/previous item (vim-style) |
+| `<C-Space>` | Trigger completion |
+| `<C-e>` | Close completion menu |
+
 ### AI Completion (Codeium)
 
 | Keybind | Description |
 |---------|-------------|
-| `Tab` | Accept suggestion |
+| `<C-y>` | Accept suggestion |
 | `Alt+h` / `Alt+l` | Cycle suggestions (prev/next) |
 | `Ctrl+x` | Clear suggestion |
 | `<leader>ot` | Toggle Codeium on/off |
@@ -886,8 +897,14 @@ Select inside text object and jump to end (custom implementation):
 - `Ctrl+\` → Toggle terminal
 - `<leader>ot` → Toggle Codeium AI
 
+**Completion (nvim-cmp):**
+- `<Tab>` → Next completion item
+- `<S-Tab>` → Previous completion item
+- `<CR>` → Confirm selection
+- `<C-j>` / `<C-k>` → Next/previous item (vim-style)
+
 **AI Completion (Codeium):**
-- `Tab` → Accept suggestion
+- `<C-y>` → Accept suggestion
 - `Alt+h` / `Alt+l` → Cycle suggestions
 - `Ctrl+x` → Clear suggestion
 

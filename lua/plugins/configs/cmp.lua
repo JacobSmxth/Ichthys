@@ -23,7 +23,11 @@ cmp.setup({
     -- Confirm
     ["<CR>"] = cmp.mapping.confirm({ select = true }),
 
-    -- Vim-style nav only (removed Tab)
+    -- Tab navigation for LSP completion
+    ["<Tab>"] = cmp.mapping.select_next_item(),
+    ["<S-Tab>"] = cmp.mapping.select_prev_item(),
+
+    -- Vim-style nav
     ["<C-j>"] = cmp.mapping.select_next_item(),
     ["<C-k>"] = cmp.mapping.select_prev_item(),
   }),

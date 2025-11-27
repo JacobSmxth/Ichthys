@@ -29,7 +29,7 @@ vim.api.nvim_create_user_command("CodeiumToggle", toggle_codeium, { desc = "Togg
 vim.keymap.set("n", "<leader>ot", ":CodeiumToggle<CR>", { silent = true, desc = "Toggle Codeium" })
 
 -- Ghost text keybindings
-vim.keymap.set("i", "<Tab>", function()
+vim.keymap.set("i", "<C-y>", function()
   return vim.fn["codeium#Accept"]()
 end, { expr = true, silent = true, desc = "Accept Codeium suggestion" })
 
