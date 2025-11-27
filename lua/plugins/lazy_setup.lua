@@ -1240,9 +1240,9 @@ require("lazy").setup({
         input = {
           enabled = true,
           default_prompt = "Input:",
-          title_pos = "left",
+          title_pos = "center",
           border = "single",
-          relative = "cursor",
+          relative = "editor",
           prefer_width = 40,
           width = nil,
           max_width = { 140, 0.9 },

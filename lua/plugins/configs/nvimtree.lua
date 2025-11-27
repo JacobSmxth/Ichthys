@@ -12,6 +12,15 @@ require("nvim-tree").setup({
     signcolumn = "yes",
   },
 
+  -- Use vim.ui.input for confirmations (styled by dressing.nvim)
+  ui = {
+    confirm = {
+      remove = true,
+      trash = true,
+      default_yes = false,
+    },
+  },
+
   on_attach = function(bufnr)
     local api = require("nvim-tree.api")
 
