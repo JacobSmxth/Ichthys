@@ -19,6 +19,11 @@ local function on_attach(client, bufnr)
   map("n", "<C-k>", vim.lsp.buf.signature_help, "Signature help")
   map("i", "<C-k>", vim.lsp.buf.signature_help, "Signature help")
 
+  -- Diagnostic navigation
+  map("n", "[d", vim.diagnostic.goto_prev, "Previous diagnostic")
+  map("n", "]d", vim.diagnostic.goto_next, "Next diagnostic")
+  map("n", "<leader>ld", vim.diagnostic.open_float, "Show diagnostic")
+
   -- Enable inlay hints if supported
   if client.server_capabilities.inlayHintProvider then
     vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })

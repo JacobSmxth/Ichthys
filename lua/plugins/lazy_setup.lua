@@ -1,35 +1,9 @@
 -- Plugin setup
 
 require("lazy").setup({
-  -- Colorschemes
+  -- Colorscheme
   {
     "sainnhe/gruvbox-material",
-    priority = 1000,
-  },
-
-  {
-    "ellisonleao/gruvbox.nvim",
-    priority = 1000,
-  },
-
-  {
-    "catppuccin/nvim",
-    name = "catppuccin",
-    priority = 1000,
-  },
-
-  {
-    "EdenEast/nightfox.nvim",
-    priority = 1000,
-  },
-
-  {
-    "rebelot/kanagawa.nvim",
-    priority = 1000,
-  },
-
-  {
-    "folke/tokyonight.nvim",
     priority = 1000,
   },
 
@@ -161,61 +135,9 @@ require("lazy").setup({
     dependencies = {
       "williamboman/mason.nvim",
       "williamboman/mason-lspconfig.nvim",
-      "nvimdev/lspsaga.nvim",
     },
     config = function()
       require("plugins.configs.lsp")
-    end,
-  },
-
-  -- LSP UI enhancements
-  {
-    "nvimdev/lspsaga.nvim",
-    event = "LspAttach",
-    dependencies = {
-      "nvim-treesitter/nvim-treesitter",
-      "nvim-tree/nvim-web-devicons",
-    },
-    config = function()
-      require("lspsaga").setup({
-        ui = {
-          border = "single",
-          code_action = "",
-        },
-        lightbulb = {
-          enable = false,
-          sign = false,
-          virtual_text = false,
-        },
-        symbol_in_winbar = {
-          enable = false,
-        },
-        outline = {
-          win_width = 40,
-          auto_preview = false,
-        },
-      })
-
-      -- Override native LSP keybindings with lspsaga
-      vim.api.nvim_create_autocmd("LspAttach", {
-        callback = function(args)
-          local bufnr = args.buf
-          local map = function(mode, lhs, rhs, desc)
-            vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, silent = true, desc = desc })
-          end
-
-          -- Replace with lspsaga equivalents
-          map("n", "gh", "<cmd>Lspsaga hover_doc<cr>", "Hover documentation")
-          map("n", "gd", "<cmd>Lspsaga goto_definition<cr>", "Go to definition")
-          map("n", "gD", "<cmd>Lspsaga peek_definition<cr>", "Peek definition")
-          map("n", "gr", "<cmd>Lspsaga finder<cr>", "LSP Finder (references/impl)")
-          map("n", "<leader>rn", "<cmd>Lspsaga rename<cr>", "Rename symbol")
-          map("n", "<leader>ca", "<cmd>Lspsaga code_action<cr>", "Code action")
-          map("n", "[d", "<cmd>Lspsaga diagnostic_jump_prev<cr>", "Previous diagnostic")
-          map("n", "]d", "<cmd>Lspsaga diagnostic_jump_next<cr>", "Next diagnostic")
-          map("n", "<leader>lo", "<cmd>Lspsaga outline<cr>", "Toggle outline")
-        end,
-      })
     end,
   },
 
@@ -283,14 +205,6 @@ require("lazy").setup({
     end,
   },
 
-  -- Codeium AI completion
-  {
-    "Exafunction/codeium.vim",
-    event = "BufEnter",
-    config = function()
-      require("plugins.configs.codeium")
-    end,
-  },
 
   -- Completion
   {
@@ -461,21 +375,13 @@ require("lazy").setup({
     "nvim-lua/plenary.nvim",
   },
 
-  -- File explorer
-  {
-    "nvim-tree/nvim-tree.lua",
-    config = function()
-      require("plugins.configs.nvimtree")
-    end,
-  },
-
   -- Oil.nvim (file explorer as a buffer)
   {
     "stevearc/oil.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
       require("oil").setup({
-        default_file_explorer = false,
+        default_file_explorer = true,
         columns = {
           "icon",
           "permissions",
@@ -568,8 +474,83 @@ require("lazy").setup({
         },
       })
 
+      -- Create a toggle function for side panel Oil
+      local oil_sidebar_winid = nil
+
+      local function toggle_oil_sidebar()
+        -- Check if sidebar exists and is valid
+        if oil_sidebar_winid and vim.api.nvim_win_is_valid(oil_sidebar_winid) then
+          vim.api.nvim_win_close(oil_sidebar_winid, true)
+          oil_sidebar_winid = nil
+        else
+          -- Open Oil in a vertical split on the left
+          vim.cmd("topleft vsplit")
+          require("oil").open()
+          oil_sidebar_winid = vim.api.nvim_get_current_win()
+          vim.api.nvim_win_set_width(oil_sidebar_winid, 35)
+
+          -- Mark this window as the Oil sidebar
+          vim.w.is_oil_sidebar = true
+        end
+      end
+
+      -- Set up autocmd to handle Oil buffer keymaps in sidebar
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = "oil",
+        callback = function()
+          -- Only apply custom keymap if this is the sidebar window
+          if vim.w.is_oil_sidebar then
+            vim.keymap.set("n", "<CR>", function()
+              local oil = require("oil")
+              local entry = oil.get_cursor_entry()
+
+              if not entry then
+                return
+              end
+
+              if entry.type == "file" then
+                -- Get the full path
+                local dir = oil.get_current_dir()
+                local filepath = dir .. entry.name
+
+                -- Find a non-Oil window to open the file in
+                local current_win = vim.api.nvim_get_current_win()
+                local windows = vim.api.nvim_list_wins()
+                local target_win = nil
+
+                for _, win in ipairs(windows) do
+                  local win_buf = vim.api.nvim_win_get_buf(win)
+                  local buf_ft = vim.api.nvim_get_option_value("filetype", { buf = win_buf })
+                  local win_config = vim.api.nvim_win_get_config(win)
+
+                  -- Find a normal window (not Oil, not floating)
+                  if win ~= current_win and buf_ft ~= "oil" and win_config.relative == "" then
+                    target_win = win
+                    break
+                  end
+                end
+
+                -- Open file in target window
+                if target_win then
+                  vim.api.nvim_set_current_win(target_win)
+                  vim.cmd("edit " .. vim.fn.fnameescape(filepath))
+                else
+                  -- Fallback: open in new split if no suitable window found
+                  vim.cmd("wincmd l")
+                  vim.cmd("edit " .. vim.fn.fnameescape(filepath))
+                end
+              else
+                -- Navigate into directory
+                oil.select()
+              end
+            end, { buffer = true, desc = "Open in main window" })
+          end
+        end,
+      })
+
       vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
       vim.keymap.set("n", "<leader>-", require("oil").toggle_float, { desc = "Open Oil (float)" })
+      vim.keymap.set("n", "<leader>e", toggle_oil_sidebar, { desc = "Toggle Oil sidebar" })
     end,
   },
 
@@ -713,10 +694,6 @@ require("lazy").setup({
     opts = {},
   },
 
-  -- Lorem Ipsum generator
-  {
-    "derektata/lorem.nvim",
-  },
 
   -- Markdown preview
   {
@@ -744,19 +721,6 @@ require("lazy").setup({
     },
   },
 
-  -- REST client
-  {
-    "mistweaverco/kulala.nvim",
-    ft = "http",
-    keys = {
-      { "<leader>kr", "<cmd>lua require('kulala').run()<cr>", desc = "Run request" },
-      { "<leader>kt", "<cmd>lua require('kulala').toggle_view()<cr>", desc = "Toggle headers/body" },
-      { "<leader>kc", "<cmd>lua require('kulala').copy()<cr>", desc = "Copy as cURL" },
-    },
-    config = function()
-      require("kulala").setup()
-    end,
-  },
 
   -- Treesitter context (sticky scroll)
   {
@@ -972,19 +936,21 @@ require("lazy").setup({
         { "<leader>b", group = "Buffers" },
         { "<leader>g", group = "Git" },
         { "<leader>h", group = "Harpoon" },
-        { "<leader>k", group = "Kulala (REST)" },
-        { "<leader>l", group = "LSP/Lspsaga" },
+        { "<leader>l", group = "LSP" },
         { "<leader>x", group = "Trouble/Diagnostics" },
         { "<leader>w", group = "Window" },
         { "<leader>o", group = "Options/Other" },
         { "<leader>c", group = "Code/Compile (filetype)" },
         { "<leader>t", group = "Tasks (Overseer)" },
-        { "<leader>r", group = "Refactor" },
+        { "<leader>r", group = "Refactor/REST" },
+        { "<leader>n", group = "Neotest" },
+        { "<leader>D", group = "Database" },
+        { "<leader>s", group = "Search/Replace" },
 
-        -- Common LSP actions (lspsaga)
+        -- Common LSP actions
         { "<leader>ca", desc = "Code Action" },
         { "<leader>rn", desc = "Rename Symbol" },
-        { "<leader>lo", desc = "Toggle Lspsaga Outline" },
+        { "<leader>ld", desc = "Show Diagnostic" },
 
         -- Git operations
         { "<leader>gg", desc = "Open Lazygit" },
@@ -1017,7 +983,6 @@ require("lazy").setup({
         { "<leader>u", desc = "Undo Tree" },
         { "<leader>/", desc = "Fuzzy Find in Buffer" },
         { "<leader>oi", desc = "Organize Imports (Java)" },
-        { "<leader>ot", desc = "Toggle Codeium" },
 
         -- Dev Dashboard (standalone, DAP uses <leader>db, dc, etc.)
         { "<leader>d", desc = "Dev Dashboard" },
@@ -1376,6 +1341,188 @@ require("lazy").setup({
   -- Dev icons (kept for plugin compatibility, mini.icons used where possible)
   {
     "nvim-tree/nvim-web-devicons",
+  },
+
+  -- Database client (vim-dadbod)
+  {
+    "tpope/vim-dadbod",
+  },
+
+  {
+    "kristijanhusak/vim-dadbod-ui",
+    dependencies = { "tpope/vim-dadbod" },
+    cmd = { "DBUI", "DBUIToggle", "DBUIAddConnection" },
+    keys = {
+      { "<leader>Du", "<cmd>DBUIToggle<cr>", desc = "Toggle Database UI" },
+      { "<leader>Df", "<cmd>DBUIFindBuffer<cr>", desc = "Find DB Buffer" },
+    },
+    init = function()
+      vim.g.db_ui_save_location = vim.fn.stdpath("data") .. "/db_ui"
+      vim.g.db_ui_use_nerd_fonts = 1
+      vim.g.db_ui_show_database_icon = 1
+      vim.g.db_ui_force_echo_notifications = 0
+      vim.g.db_ui_win_position = "left"
+      vim.g.db_ui_winwidth = 40
+    end,
+  },
+
+  {
+    "kristijanhusak/vim-dadbod-completion",
+    dependencies = { "tpope/vim-dadbod" },
+    ft = { "sql", "mysql", "plsql" },
+    init = function()
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = { "sql", "mysql", "plsql" },
+        callback = function()
+          local cmp = require("cmp")
+          cmp.setup.buffer({
+            sources = {
+              { name = "vim-dadbod-completion" },
+              { name = "buffer" },
+            },
+          })
+        end,
+      })
+    end,
+  },
+
+  -- REST client
+  {
+    "rest-nvim/rest.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    ft = "http",
+    keys = {
+      { "<leader>rr", "<cmd>Rest run<cr>", desc = "Run REST request" },
+      { "<leader>rl", "<cmd>Rest run last<cr>", desc = "Run last REST request" },
+    },
+    config = function()
+      require("rest-nvim").setup({
+        result_split_horizontal = false,
+        result_split_in_place = false,
+        skip_ssl_verification = false,
+        encode_url = true,
+        highlight = {
+          enabled = true,
+          timeout = 150,
+        },
+        result = {
+          show_url = true,
+          show_http_info = true,
+          show_headers = true,
+          formatters = {
+            json = "jq",
+            html = function(body)
+              return vim.fn.system({ "tidy", "-i", "-q", "-" }, body)
+            end,
+          },
+        },
+      })
+    end,
+  },
+
+  -- Test runner
+  {
+    "nvim-neotest/neotest",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-treesitter/nvim-treesitter",
+      "nvim-neotest/neotest-python",
+      "nvim-neotest/neotest-go",
+      "rcasia/neotest-java",
+      "nvim-neotest/neotest-jest",
+    },
+    keys = {
+      { "<leader>nr", function() require("neotest").run.run() end, desc = "Run nearest test" },
+      { "<leader>nf", function() require("neotest").run.run(vim.fn.expand("%")) end, desc = "Run file tests" },
+      { "<leader>ns", function() require("neotest").summary.toggle() end, desc = "Toggle test summary" },
+      { "<leader>no", function() require("neotest").output.open({ enter = true }) end, desc = "Show test output" },
+      { "<leader>nd", function() require("neotest").run.run({ strategy = "dap" }) end, desc = "Debug nearest test" },
+    },
+    config = function()
+      require("neotest").setup({
+        adapters = {
+          require("neotest-python")({
+            dap = { justMyCode = false },
+            runner = "pytest",
+          }),
+          require("neotest-go"),
+          require("neotest-java"),
+          require("neotest-jest")({
+            jestCommand = "npm test --",
+            env = { CI = true },
+            cwd = function()
+              return vim.fn.getcwd()
+            end,
+          }),
+        },
+        output = {
+          enabled = true,
+          open_on_run = false,
+        },
+        quickfix = {
+          enabled = false,
+        },
+        status = {
+          enabled = true,
+          virtual_text = true,
+          signs = true,
+        },
+        icons = {
+          passed = "✓",
+          running = "●",
+          failed = "✗",
+          skipped = "○",
+          unknown = "?",
+        },
+      })
+    end,
+  },
+
+  {
+    "nvim-neotest/neotest-python",
+    dependencies = { "nvim-neotest/neotest" },
+  },
+
+  {
+    "nvim-neotest/neotest-go",
+    dependencies = { "nvim-neotest/neotest" },
+  },
+
+  {
+    "rcasia/neotest-java",
+    dependencies = { "nvim-neotest/neotest" },
+  },
+
+  {
+    "nvim-neotest/neotest-jest",
+    dependencies = { "nvim-neotest/neotest" },
+  },
+
+  -- Find and replace
+  {
+    "MagicDuck/grug-far.nvim",
+    cmd = "GrugFar",
+    keys = {
+      { "<leader>sr", "<cmd>GrugFar<cr>", desc = "Find and Replace" },
+      { "<leader>sw", function() require("grug-far").grug_far({ prefills = { search = vim.fn.expand("<cword>") } }) end, desc = "Find and Replace (word)" },
+      { "<leader>sr", function() require("grug-far").with_visual_selection({ prefills = { paths = vim.fn.expand("%") } }) end, mode = "v", desc = "Find and Replace (selection)" },
+    },
+    config = function()
+      require("grug-far").setup({
+        engine = "ripgrep",
+        transient = true,
+        keymaps = {
+          replace = { n = "<localleader>r" },
+          qflist = { n = "<localleader>q" },
+          syncLocations = { n = "<localleader>s" },
+          syncLine = { n = "<localleader>l" },
+          close = { n = "<localleader>c" },
+          historyOpen = { n = "<localleader>h" },
+          historyAdd = { n = "<localleader>a" },
+          refresh = { n = "<localleader>f" },
+        },
+      })
+    end,
   },
 
   -- Zen Mode (distraction-free focus mode)

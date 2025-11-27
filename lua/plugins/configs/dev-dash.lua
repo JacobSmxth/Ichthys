@@ -27,6 +27,18 @@ local function get_git_info()
       end
     end
 
+    -- Last commit
+    local last_commit = vim.fn.system("git log -1 --format='%h - %s' 2>/dev/null"):gsub("\n", "")
+    if last_commit ~= "" then
+      table.insert(lines, "Last: " .. last_commit)
+    end
+
+    -- Time since last commit
+    local commit_time = vim.fn.system("git log -1 --format='%ar' 2>/dev/null"):gsub("\n", "")
+    if commit_time ~= "" then
+      table.insert(lines, "When: " .. commit_time)
+    end
+
     table.insert(lines, "")
 
     -- Git status
@@ -41,6 +53,127 @@ local function get_git_info()
     end
   else
     table.insert(lines, "Not a git repository")
+  end
+
+  return lines
+end
+
+local function get_project_info()
+  local lines = {}
+  local cwd = vim.fn.getcwd()
+
+  table.insert(lines, "Path: " .. vim.fn.fnamemodify(cwd, ":~"))
+  table.insert(lines, "")
+
+  -- Detect language versions
+  local java_version = vim.fn.system("java -version 2>&1 | head -1"):gsub("\n", "")
+  if java_version:match("version") then
+    local version = java_version:match('"([^"]+)"')
+    if version then
+      table.insert(lines, "Java: " .. version)
+    end
+  end
+
+  local go_version = vim.fn.system("go version 2>/dev/null"):gsub("\n", "")
+  if go_version:match("go version") then
+    local version = go_version:match("go(%S+)")
+    if version then
+      table.insert(lines, "Go: " .. version)
+    end
+  end
+
+  local node_version = vim.fn.system("node --version 2>/dev/null"):gsub("\n", "")
+  if node_version ~= "" then
+    table.insert(lines, "Node: " .. node_version)
+  end
+
+  local python_version = vim.fn.system("python3 --version 2>/dev/null"):gsub("\n", "")
+  if python_version:match("Python") then
+    local version = python_version:match("Python%s+(%S+)")
+    if version then
+      table.insert(lines, "Python: " .. version)
+    end
+  end
+
+  return lines
+end
+
+local function get_lsp_info()
+  local lines = {}
+
+  -- Get LSP clients attached to current buffer
+  local clients = vim.lsp.get_clients({ bufnr = 0 })
+
+  if #clients == 0 then
+    table.insert(lines, "No LSP clients attached")
+  else
+    table.insert(lines, "Active LSP Servers:")
+    for _, client in ipairs(clients) do
+      local status = "ready"
+      -- Check if client is still initializing
+      if client.initialized == false then
+        status = "initializing"
+      end
+      table.insert(lines, string.format("  %s (%s)", client.name, status))
+    end
+  end
+
+  return lines
+end
+
+local function get_spring_boot_info()
+  local lines = {}
+  local cwd = vim.fn.getcwd()
+
+  -- Check if this is a Spring Boot project
+  local is_spring = false
+  local build_gradle = cwd .. "/build.gradle"
+  if vim.fn.filereadable(build_gradle) == 1 then
+    local content = table.concat(vim.fn.readfile(build_gradle), "\n")
+    if content:match("spring%-boot") then
+      is_spring = true
+    end
+  end
+
+  if not is_spring then
+    return nil -- Don't show this section if not Spring Boot
+  end
+
+  table.insert(lines, "Spring Boot Project Detected")
+  table.insert(lines, "")
+
+  -- Check for active profile
+  local profile = os.getenv("SPRING_PROFILES_ACTIVE") or "default"
+  table.insert(lines, "Profile: " .. profile)
+
+  -- Try to read application.properties for port
+  local props_file = cwd .. "/src/main/resources/application.properties"
+  if vim.fn.filereadable(props_file) == 1 then
+    local props = vim.fn.readfile(props_file)
+    for _, line in ipairs(props) do
+      local port = line:match("server%.port%s*=%s*(%d+)")
+      if port then
+        table.insert(lines, "Port: " .. port)
+
+        -- Check if port is in use (app running)
+        local port_check = vim.fn.system("lsof -i:" .. port .. " 2>/dev/null | grep LISTEN")
+        if port_check ~= "" then
+          table.insert(lines, "Status: Running")
+        else
+          table.insert(lines, "Status: Stopped")
+        end
+        break
+      end
+    end
+
+    -- Check for datasource URL
+    for _, line in ipairs(props) do
+      local db_url = line:match("spring%.datasource%.url%s*=%s*(.+)")
+      if db_url then
+        table.insert(lines, "Database: " .. db_url)
+        break
+      end
+    end
   end
 
   return lines
@@ -178,6 +311,33 @@ local function render_content()
   end
   table.insert(content, "└──────────────────────────────────────────────────────┘")
   table.insert(content, "")
+
+  -- Project Info section
+  table.insert(content, "┌─ PROJECT INFO ───────────────────────────────────────┐")
+  for _, line in ipairs(get_project_info()) do
+    table.insert(content, "│ " .. line)
+  end
+  table.insert(content, "└──────────────────────────────────────────────────────┘")
+  table.insert(content, "")
+
+  -- LSP section
+  table.insert(content, "┌─ LSP ────────────────────────────────────────────────┐")
+  for _, line in ipairs(get_lsp_info()) do
+    table.insert(content, "│ " .. line)
+  end
+  table.insert(content, "└──────────────────────────────────────────────────────┘")
+  table.insert(content, "")
+
+  -- Spring Boot section (conditional)
+  local spring_info = get_spring_boot_info()
+  if spring_info then
+    table.insert(content, "┌─ SPRING BOOT ────────────────────────────────────────┐")
+    for _, line in ipairs(spring_info) do
+      table.insert(content, "│ " .. line)
+    end
+    table.insert(content, "└──────────────────────────────────────────────────────┘")
+    table.insert(content, "")
+  end
 
   -- Diagnostics section
   table.insert(content, "┌─ DIAGNOSTICS ────────────────────────────────────────┐")

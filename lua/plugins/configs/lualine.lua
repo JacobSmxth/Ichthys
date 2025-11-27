@@ -62,13 +62,6 @@ local function lsp_status()
   return "[" .. table.concat(names, ",") .. "]"
 end
 
-local function codeium_status()
-  if vim.g.codeium_enabled == false then
-    return "[Codeium:OFF]"
-  end
-  return ""
-end
-
 local function macro_recording()
   local recording = vim.fn.reg_recording()
   if recording ~= "" then
@@ -124,7 +117,6 @@ require("lualine").setup({
       { search_count, color = { fg = colors.cyan } },
     },
     lualine_x = {
-      { codeium_status, color = { fg = colors.orange } },
       { lsp_status, color = { fg = colors.purple } },
       "encoding",
       { "fileformat", symbols = { unix = "LF", dos = "CRLF", mac = "CR" } },

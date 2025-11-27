@@ -105,3 +105,29 @@ autocmd({ "VimEnter", "ColorScheme" }, {
     ]])
   end,
 })
+
+-- Project detection on session restore
+augroup("ProjectDetection", { clear = true })
+autocmd("User", {
+  group = "ProjectDetection",
+  pattern = "AutoSessionRestored",
+  callback = function()
+    -- Defer to ensure all plugins are loaded
+    vim.defer_fn(function()
+      require("core.project").setup_project()
+    end, 500)
+  end,
+})
+
+-- Also run on VimEnter for manual opens
+autocmd("VimEnter", {
+  group = "ProjectDetection",
+  callback = function()
+    -- Only run if not restored from session
+    if vim.g.SessionLoad ~= 1 then
+      vim.defer_fn(function()
+        require("core.project").setup_project()
+      end, 1000)
+    end
+  end,
+})

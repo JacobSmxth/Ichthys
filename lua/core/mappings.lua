@@ -14,7 +14,7 @@ map("v", "<Down>", "<Nop>", opts)
 map("v", "<Left>", "<Nop>", opts)
 map("v", "<Right>", "<Nop>", opts)
 
-map("n", "<leader>e", ":NvimTreeToggle<CR>", opts)
+-- <leader>e is now handled by Oil config in lazy_setup.lua
 
 map("n", "<leader>i", function()
   local view = vim.fn.winsaveview()
@@ -32,38 +32,78 @@ map("n", "<leader>fg", ":Telescope live_grep<CR>", opts)
 map("n", "<leader>fb", ":Telescope buffers<CR>", opts)
 map("n", "<leader>fs", ":AutoSession search<CR>", { noremap = true, silent = true, desc = "Find sessions" })
 map("n", "<leader>fd", function()
-  local ok_lib, lib = pcall(require, "auto-session.lib")
   local ok_pickers, pickers = pcall(require, "telescope.pickers")
   local ok_finders, finders = pcall(require, "telescope.finders")
   local ok_conf, conf = pcall(require, "telescope.config")
   local ok_actions, actions = pcall(require, "telescope.actions")
   local ok_action_state, action_state = pcall(require, "telescope.actions.state")
 
-  if not (ok_lib and ok_pickers and ok_finders and ok_conf and ok_actions and ok_action_state) then
-    vim.notify("auto-session or Telescope not available", vim.log.levels.ERROR)
+  if not (ok_pickers and ok_finders and ok_conf and ok_actions and ok_action_state) then
+    vim.notify("Telescope not available", vim.log.levels.ERROR)
     return
   end
 
-  -- Get all session files
-  local sessions = vim.fn.glob(vim.fn.stdpath("data") .. "/sessions/*.vim", false, true)
-  local session_names = {}
+  -- Function to get current sessions from filesystem
+  local function get_sessions()
+    local sessions = vim.fn.glob(vim.fn.stdpath("data") .. "/sessions/*.vim", false, true)
+    local session_names = {}
 
-  for _, session_path in ipairs(sessions) do
-    local name = vim.fn.fnamemodify(session_path, ":t:r")
-    -- Decode the session name (auto-session uses URL encoding)
-    name = name:gsub("%%(%x%x)", function(hex)
-      return string.char(tonumber(hex, 16))
-    end)
-    table.insert(session_names, { name = name, path = session_path })
+    for _, session_path in ipairs(sessions) do
+      local name = vim.fn.fnamemodify(session_path, ":t:r")
+      -- Decode the session name (auto-session uses URL encoding)
+      name = name:gsub("%%(%x%x)", function(hex)
+        return string.char(tonumber(hex, 16))
+      end)
+      table.insert(session_names, { name = name, path = session_path })
+    end
+
+    return session_names
   end
+
+  local session_names = get_sessions()
 
   if #session_names == 0 then
     vim.notify("No sessions found", vim.log.levels.WARN)
     return
   end
 
+  local function delete_session(prompt_bufnr)
+    local selection = action_state.get_selected_entry()
+    if not selection then return end
+
+    local ok = os.remove(selection.value.path)
+    if ok then
+      vim.notify("Deleted: " .. selection.value.name, vim.log.levels.INFO)
+
+      -- Re-scan filesystem for remaining sessions
+      local remaining_sessions = get_sessions()
+
+      -- If no sessions left, close the picker
+      if #remaining_sessions == 0 then
+        vim.notify("All sessions deleted", vim.log.levels.INFO)
+        actions.close(prompt_bufnr)
+        return
+      end
+
+      -- Refresh the picker with current filesystem state
+      local current_picker = action_state.get_current_picker(prompt_bufnr)
+      current_picker:refresh(finders.new_table({
+        results = remaining_sessions,
+        entry_maker = function(entry)
+          return {
+            value = entry,
+            display = entry.name,
+            ordinal = entry.name,
+          }
+        end,
+      }), { reset_prompt = false })
+    else
+      vim.notify("Failed to delete session", vim.log.levels.ERROR)
+    end
+  end
+
   pickers.new({}, {
-    prompt_title = "Delete Session",
+    prompt_title = "Delete Session (Enter to delete, Esc to cancel)",
     finder = finders.new_table({
       results = session_names,
       entry_maker = function(entry)
@@ -75,25 +115,17 @@ map("n", "<leader>fd", function()
       end,
     }),
     sorter = conf.values.generic_sorter({}),
-    attach_mappings = function(prompt_bufnr)
+    attach_mappings = function(prompt_bufnr, map)
+      -- Enter deletes the selected session
       actions.select_default:replace(function()
-        local selection = action_state.get_selected_entry()
-        actions.close(prompt_bufnr)
-
-        -- Confirm deletion
-        vim.ui.input({
-          prompt = "Delete session '" .. selection.value.name .. "'? (y/N): ",
-        }, function(input)
-          if input and (input:lower() == "y" or input:lower() == "yes") then
-            local ok = os.remove(selection.value.path)
-            if ok then
-              vim.notify("Deleted session: " .. selection.value.name, vim.log.levels.INFO)
-            else
-              vim.notify("Failed to delete session", vim.log.levels.ERROR)
-            end
-          end
-        end)
+        delete_session(prompt_bufnr)
       end)
+
+      -- dd also deletes (like harpoon)
+      map("n", "dd", function()
+        delete_session(prompt_bufnr)
+      end)
+
       return true
     end,
   }):find()

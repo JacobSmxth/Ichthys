@@ -78,3 +78,7 @@ o.laststatus = 2
 -- Space leader
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
+
+-- Disable netrw (using Oil instead)
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1

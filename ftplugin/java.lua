@@ -40,7 +40,15 @@ local config = {
       contentProvider = { preferred = "fernflower" },
     },
   },
-  init_options = { bundles = {} },
+  init_options = {
+    bundles = {
+      -- Spring Boot Tools (optional, enhances Spring Boot support)
+      -- Download from: https://github.com/spring-projects/sts4/releases
+      -- Extract and place jars in ~/.local/share/nvim/spring-boot-tools/
+      -- Provides: @Bean navigation, application.properties completion, Spring code actions
+      -- vim.fn.glob(vim.fn.stdpath("data") .. "/spring-boot-tools/*.jar", true),
+    },
+  },
 }
 
 local function get_class_name()

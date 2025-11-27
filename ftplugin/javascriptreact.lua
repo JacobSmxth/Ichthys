@@ -26,5 +26,3 @@ map("n", "<leader>cf", function()
 end, vim.tbl_extend("force", opts, { desc = "React: Format" }))
 
 map("n", "<leader>ca", vim.lsp.buf.code_action, vim.tbl_extend("force", opts, { desc = "React: Code action" }))
-
-map("n", "<leader>cl", ":LoremIpsum<CR>", vim.tbl_extend("force", opts, { desc = "React: Lorem Ipsum" }))
