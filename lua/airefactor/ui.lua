@@ -15,7 +15,7 @@ function M.show_no_refactor(explanation)
 
   M.create_float_window(lines, "markdown", true)
 end
-function M.show_refactor(original, refactored, explanation, imports, changes, start_line, end_line, filetype)
+function M.show_refactor(original, refactored, explanation, imports, changes, start_line, end_line, filetype, refactor_module)
   local buf_original = vim.api.nvim_create_buf(false, true)
   local buf_refactored = vim.api.nvim_create_buf(false, true)
   local buf_info = vim.api.nvim_create_buf(false, true)
@@ -51,6 +51,7 @@ function M.show_refactor(original, refactored, explanation, imports, changes, st
   table.insert(info_lines, "")
   table.insert(info_lines, "  [a] Accept refactoring (replace selected code)")
   table.insert(info_lines, "  [r] Reject refactoring")
+  table.insert(info_lines, "  [f] Send feedback to refine")
   table.insert(info_lines, "  [q] Close without changes")
   if imports ~= "None" and imports ~= "" then
     table.insert(info_lines, "")
@@ -164,10 +165,31 @@ function M.show_refactor(original, refactored, explanation, imports, changes, st
     vim.notify("Refactoring rejected", vim.log.levels.INFO)
   end
 
+  local function send_feedback()
+    close_windows()
+
+    vim.schedule(function()
+      vim.ui.input({
+        prompt = "Feedback (e.g., 'why didn't you use a for loop?'): ",
+      }, function(input)
+        if input and input ~= "" then
+          if refactor_module and refactor_module.send_feedback then
+            refactor_module.send_feedback(input)
+          else
+            vim.notify("Feedback feature not available", vim.log.levels.ERROR)
+          end
+        else
+          vim.notify("Feedback cancelled", vim.log.levels.INFO)
+        end
+      end)
+    end)
+  end
+
   -- Set keymaps for all windows
   for _, buf in ipairs(context.buffers) do
     vim.keymap.set("n", "a", accept_refactor, { buffer = buf, silent = true, desc = "Accept refactoring" })
     vim.keymap.set("n", "r", reject_refactor, { buffer = buf, silent = true, desc = "Reject refactoring" })
+    vim.keymap.set("n", "f", send_feedback, { buffer = buf, silent = true, desc = "Send feedback" })
     vim.keymap.set("n", "q", close_windows, { buffer = buf, silent = true, desc = "Close without changes" })
     vim.keymap.set("n", "<Esc>", close_windows, { buffer = buf, silent = true, desc = "Close without changes" })
   end
