@@ -8,26 +8,29 @@ A modern, performance-focused Neovim configuration built to glorify the Lord thr
 
 This is not a general-purpose Neovim distribution. It's a **personalized, production-ready development environment** specifically optimized for:
 
-- **Backend & Systems Development**: Java, C/C++, C#, Go, Python
+- **Backend & Systems Development**: Java/Spring Boot, C/C++, Go, Python
 - **Web Development**: TypeScript/JavaScript, React, HTML/CSS/SCSS
 - **DevOps & Scripting**: Bash/Zsh, Lua
-- **Maximum Performance**: 67ms startup with 50+ plugins through aggressive lazy loading
+- **Maximum Performance**: 67ms startup through aggressive lazy loading
 - **AI-Powered Refactoring**: Local Ollama integration for intelligent code improvements
-- **Modern APIs**: Uses Neovim 0.11+ native LSP features that most configs haven't adopted yet
-- **Complete Debugging**: Full DAP support for all languages (not just demos)
-- **Faith-Centered**: Built with intentionality to honor God through excellence
+- **Modern APIs**: Uses Neovim 0.11+ native LSP features
+- **Complete Debugging**: Full DAP support for all languages
+- **Database Development**: Integrated SQL client with completion
+- **Faith-Centered**: Built with intentionality to honor God
 
 ## Features
 
-- **Bleeding-edge Neovim 0.11+** with new native LSP APIs (`vim.lsp.config`, `vim.lsp.enable`)
+- **Bleeding-edge Neovim 0.11+** with native LSP APIs (`vim.lsp.config`, `vim.lsp.enable`)
 - **Lightning-fast startup** (67ms average) through strategic lazy loading
 - **9 language environments**: Java, C/C++, C#, Go, Python, TypeScript/JavaScript, HTML/CSS/SCSS, Bash/Zsh, Lua
 - **Production-ready debugging** with DAP adapters for every language
-- **AI-powered tools**: Codeium completion + Ollama refactoring + Claude explanations
+- **AI-powered refactoring**: Ollama + Claude explanations
+- **Database client**: vim-dadbod with UI and completion
+- **REST client**: .http file support for API testing
+- **Unified test runner**: neotest with adapters for all languages
 - **Git workflow** integration with LazyGit + Gitsigns
 - **Smart project sessions** with auto-save/restore and git branch awareness
-- **6 beautiful color themes** with easy switching (gruvbox-material, catppuccin, kanagawa, tokyonight, etc.)
-- **Unified preferences system** - `.preferences` file for mouse, Ollama model, and more
+- **Project-aware dashboard** with LSP status, Spring Boot detection, and more
 
 ---
 
@@ -36,6 +39,7 @@ This is not a general-purpose Neovim distribution. It's a **personalized, produc
 **Leader Key**: `Space`
 
 ### Core Philosophy
+
 - **No arrow keys** - Disabled to enforce hjkl navigation
 - **jj to escape** - Quick escape from insert/terminal mode
 - **Space-based leader** - Ergonomic and discoverable with which-key
@@ -45,12 +49,12 @@ This is not a general-purpose Neovim distribution. It's a **personalized, produc
 | Keybind | Description |
 |---------|-------------|
 | `Shift+H` / `Shift+L` | Previous/Next buffer |
-| `<leader>bd` | Delete buffer with fzf picker |
+| `<leader>bd` | Delete buffer |
 | `Ctrl+h/j/k/l` | Navigate windows |
 | `<leader><leader>` | Toggle last two buffers |
 | `-` | Open parent directory (Oil) |
 | `<leader>-` | Open Oil (floating) |
-| `<leader>e` | Toggle file tree (nvim-tree) |
+| `<leader>e` | Toggle Oil sidebar |
 | `<leader>a` | Toggle code outline (Aerial) |
 
 ### Search & Find (Telescope)
@@ -84,19 +88,22 @@ This is not a general-purpose Neovim distribution. It's a **personalized, produc
 | `gr` | Go to references |
 | `gI` | Go to implementation |
 | `gh` | Hover documentation |
-| `K` | Man page lookup (native) |
-| `Ctrl+k` | Signature help (normal/insert) |
+| `<C-k>` | Signature help (normal/insert) |
 | `<leader>rn` | Rename symbol |
 | `<leader>ca` | Code action |
-| `<leader>cl` | Run code lens |
 | `<leader>D` | Type definition |
 | `[d` / `]d` | Previous/Next diagnostic |
+| `<leader>ld` | Show diagnostic float |
 
 ### Git
 
 | Keybind | Description |
 |---------|-------------|
 | `<leader>gg` | Open LazyGit |
+| `<leader>hs` | Stage hunk |
+| `<leader>hr` | Reset hunk |
+| `<leader>hp` | Preview hunk |
+| `<leader>hb` | Blame line |
 
 ### Editing
 
@@ -107,13 +114,11 @@ This is not a general-purpose Neovim distribution. It's a **personalized, produc
 | `Alt+j` / `Alt+k` | Move line(s) up/down |
 | `<` / `>` | Indent/outdent (stays in visual) |
 | `gc` | Comment (motion/visual) |
-| `n` / `N` | Next/prev search (centered with zzzv) |
+| `n` / `N` | Next/prev search (centered) |
 
-### "Go Inner" (Custom Visual Selection) **UNIQUE**
+### "Go Inner" (Custom Visual Selection)
 
-**This is a custom operator** that selects inside a text object and jumps to the end. Perfect for rapid editing workflows.
-
-Select inside and jump to end:
+Select inside a text object and jump to the end:
 
 | Keybind | Selection |
 |---------|-----------|
@@ -124,8 +129,6 @@ Select inside and jump to end:
 | `gi[` `gi]` | Brackets |
 | `gi<` `gi>` | Angle brackets |
 
-**Example**: `gi{` in a function will select all content inside braces and place cursor at the end.
-
 ### Completion (nvim-cmp)
 
 | Keybind | Description |
@@ -133,29 +136,16 @@ Select inside and jump to end:
 | `<Tab>` | Next completion item |
 | `<S-Tab>` | Previous completion item |
 | `<CR>` | Confirm selection |
-| `<C-j>` / `<C-k>` | Next/previous item (vim-style) |
+| `<C-j>` / `<C-k>` | Next/previous item |
 | `<C-Space>` | Trigger completion |
 | `<C-e>` | Close completion menu |
 
-### AI Completion (Codeium)
-
-| Keybind | Description |
-|---------|-------------|
-| `<C-y>` | Accept suggestion |
-| `Alt+h` / `Alt+l` | Cycle suggestions (prev/next) |
-| `Ctrl+x` | Clear suggestion |
-| `<leader>ot` | Toggle Codeium on/off |
-
-### Claude AI Assistant (Built-in)
+### Claude AI Assistant
 
 | Keybind | Description |
 |---------|-------------|
 | `<leader>ce` | Explain selected code (visual mode) |
-| `<leader>cq` | Ask Claude a question (opens prompt) |
-
-**Commands (alternative):**
-- `:Explain` - Explain selected code (visual mode)
-- `:Guide <query>` - Get AI guidance on any topic
+| `<leader>cq` | Ask Claude a question |
 
 ### AI Refactoring (Ollama)
 
@@ -163,13 +153,42 @@ Select inside and jump to end:
 |---------|-------------|
 | `<leader>ra` | AI-powered refactoring (visual mode) |
 
-**Commands:**
-- `:AIRefactor` - Analyze and refactor selected code
-
 **Actions (when refactor UI is open):**
 - `a` - Accept refactoring
 - `r` - Reject refactoring
 - `q` - Close without changes
+
+### Database (vim-dadbod)
+
+| Keybind | Description |
+|---------|-------------|
+| `<leader>Du` | Toggle Database UI |
+| `<leader>Df` | Find DB buffer |
+
+### REST Client (rest.nvim)
+
+| Keybind | Description |
+|---------|-------------|
+| `<leader>rr` | Run HTTP request (.http files) |
+| `<leader>rl` | Run last request |
+
+### Test Runner (neotest)
+
+| Keybind | Description |
+|---------|-------------|
+| `<leader>nr` | Run nearest test |
+| `<leader>nf` | Run file tests |
+| `<leader>ns` | Toggle test summary |
+| `<leader>no` | Show test output |
+| `<leader>nd` | Debug nearest test (DAP) |
+
+### Search & Replace (grug-far)
+
+| Keybind | Description |
+|---------|-------------|
+| `<leader>sr` | Open find and replace |
+| `<leader>sw` | Find word under cursor |
+| Visual `<leader>sr` | Find selection |
 
 ### Windows
 
@@ -184,32 +203,23 @@ Select inside and jump to end:
 
 | Keybind | Description |
 |---------|-------------|
-| `m` | Flash jump (jump to any word/location) |
-| `M` | Flash Treesitter (syntax-aware jump) |
-
-### REST Client (Kulala)
-
-| Keybind | Description |
-|---------|-------------|
-| `<leader>kr` | Run request (.http files) |
-| `<leader>kt` | Toggle headers/body |
-| `<leader>kc` | Copy as cURL |
+| `m` | Flash jump |
+| `M` | Flash Treesitter (syntax-aware) |
 
 ### Dev Dashboard
 
 | Keybind | Description |
 |---------|-------------|
-| `<leader>d` | Open Dev Dashboard (git, diagnostics, TODOs, system info) |
+| `<leader>d` | Open Dev Dashboard |
 
-**Dashboard Controls:**
-- `q` - Close dashboard
-- `r` - Refresh dashboard
-
-**Shows:**
-- Git branch, ahead/behind, status
-- LSP diagnostics (errors/warnings with top issues)
-- TODO/FIXME/HACK/NOTE/XXX/BUG comments in current project
-- System info (memory, CPU load, disk usage)
+**Dashboard shows:**
+- Git branch, ahead/behind, last commit
+- Project info with language versions
+- Active LSP servers
+- Spring Boot status (if detected)
+- Diagnostics summary
+- TODO/FIXME comments
+- System info
 
 ### Debugging (DAP)
 
@@ -254,90 +264,96 @@ Select inside and jump to end:
 ## Plugins
 
 ### Philosophy
+
 Every plugin is **lazy-loaded** and serves a specific purpose. No bloat, no unused features.
 
 ### UI & Navigation
+
 - **dashboard-nvim** - Beautiful startup screen with verse
-- **nvim-tree.lua** - Traditional file tree explorer
-- **oil.nvim** - Edit filesystem like a buffer (modern alternative)
+- **oil.nvim** - Edit filesystem like a buffer (replaces traditional file trees)
 - **telescope.nvim** - Fuzzy finder for everything
-- **dressing.nvim** - Telescope-based UI for vim.ui.select/input (overseer tasks, LSP actions)
+- **dressing.nvim** - Telescope-based UI for vim.ui.select/input
 - **harpoon** - ThePrimeagen's quick file bookmarks (harpoon2)
 - **aerial.nvim** - LSP-powered code outline sidebar
-- **lualine.nvim** - Enhanced statusline with LSP status, macro recording, search count
+- **lualine.nvim** - Enhanced statusline with LSP status, macro recording
 - **which-key.nvim** - Popup showing keybind options
 - **mini.indentscope** - Animated indent scope guides
 - **mini.icons** - Modern icon support
-- **nvim-web-devicons** - File type icons (compatibility)
 - **noice.nvim** - Better UI for messages, cmdline, and popups
-- **nvim-notify** - Beautiful notification system with animations
+- **nvim-notify** - Beautiful notification system
 
 ### LSP & Completion
+
 - **mason.nvim** - Package manager for LSP servers, formatters, linters, debuggers
-- **nvim-lspconfig** - Official LSP configurations (using 0.11+ APIs)
+- **nvim-lspconfig** - Using Neovim 0.11+ native APIs
 - **nvim-jdtls** - Enhanced Java support with Eclipse JDTLS
 - **typescript-tools.nvim** - Faster TypeScript with inlay hints
 - **nvim-cmp** - Completion engine with intelligent sources
 - **LuaSnip** - Snippet engine with VSCode snippet support
-- **codeium.vim** - AI-powered code completion (free GitHub Copilot alternative)
 
 ### Code Intelligence
+
 - **nvim-treesitter** - Syntax highlighting via Tree-sitter parsers
-- **nvim-treesitter-context** - "Sticky scroll" showing current function/class (6 lines)
+- **nvim-treesitter-context** - "Sticky scroll" showing current function/class
 - **nvim-ts-autotag** - Auto-close HTML/JSX tags
 - **conform.nvim** - Modern formatter with multiple formatters per filetype
 
 ### Git Integration
+
 - **gitsigns.nvim** - Git changes in sign column with inline blame
 - **lazygit.nvim** - Full-featured git TUI inside Neovim
 
 ### Editing Enhancements (Mini.nvim Suite)
-- **mini.pairs** - Auto-close brackets/quotes with smart rules
-- **mini.comment** - Toggle comments with `gc` and `gcc`
-- **mini.surround** - Add/change/delete surrounding pairs (`sa`, `sd`, `sr`)
-- **flash.nvim** - Advanced motion plugin with treesitter support
+
+- **mini.pairs** - Auto-close brackets/quotes
+- **mini.comment** - Toggle comments with `gc`
+- **mini.surround** - Add/change/delete surrounding pairs
+- **flash.nvim** - Advanced motion with treesitter support
 
 ### Debugging (DAP)
-All languages have full debugging support:
+
 - **nvim-dap** - Debug Adapter Protocol client
-- **nvim-dap-ui** - Beautiful debug UI with variables, watches, stack traces
+- **nvim-dap-ui** - Beautiful debug UI
 - **nvim-dap-go** - Go debugging (Delve)
 - **nvim-dap-python** - Python debugging (debugpy)
-- **nvim-dap-virtual-text** - Show variable values inline while debugging
+- **nvim-dap-virtual-text** - Show variable values inline
 
-Language-specific adapters auto-configured:
-- Java: java-debug-adapter
-- C/C++: codelldb
-- C#: netcoredbg
-- JavaScript/TypeScript: js-debug-adapter
+### Database
+
+- **vim-dadbod** - Database client
+- **vim-dadbod-ui** - Database UI with connection management
+- **vim-dadbod-completion** - SQL completion in nvim-cmp
+
+### Testing
+
+- **neotest** - Unified test runner
+- **neotest-python** - pytest adapter
+- **neotest-go** - Go test adapter
+- **neotest-java** - JUnit adapter
+- **neotest-jest** - Jest adapter
+
+### REST & HTTP
+
+- **rest.nvim** - HTTP client for .http files
 
 ### Session & Workflow
+
 - **auto-session** - Auto-save/restore workspace per git branch
-- **telescope-undo.nvim** - Visual undo tree with Telescope
+- **telescope-undo.nvim** - Visual undo tree
 - **trouble.nvim** - Beautiful diagnostics/quickfix list
 - **toggleterm.nvim** - Floating/split terminals
-- **overseer.nvim** - Task runner with unified UI for Gradle/Maven/NPM/Make
-- **kulala.nvim** - REST client for .http files
+- **overseer.nvim** - Task runner for Gradle/Maven/NPM/Make
+- **grug-far.nvim** - Project-wide find and replace
 - **render-markdown.nvim** - Live markdown preview
 - **todo-comments.nvim** - Highlight TODO/FIX/NOTE/WARN
 - **fidget.nvim** - LSP progress notifications
 - **zen-mode.nvim** - Distraction-free focus mode
-- **dev-dash** (custom) - Developer dashboard showing git, diagnostics, TODOs, system info
+- **refactoring.nvim** - Refactoring operations
 
-### AI Assistant
-- **claude** - Built-in Claude AI plugin for code explanations and guidance
-  - `:Explain` - Explain highlighted code in visual mode
-  - `:Guide <query>` - Get AI help on any development topic
-  - Async API calls (non-blocking)
-  - Markdown responses with syntax highlighting
-  - Requires `ANTHROPIC_API_KEY` environment variable
-- **airefactor** - Ollama-powered code refactoring with approval workflow
-  - `:AIRefactor` - Get AI refactoring suggestions
-  - Side-by-side comparison (original vs refactored)
-  - Detailed explanations and change lists
-  - Approve/reject workflow
-  - Uses qwen3-coder:30b model
-  - Requires Ollama running locally
+### AI Tools
+
+- **claude** (custom) - Claude AI for code explanations and guidance
+- **airefactor** (custom) - Ollama-powered code refactoring
 
 ---
 
@@ -346,350 +362,182 @@ Language-specific adapters auto-configured:
 ```
 ~/.config/nvim/
 ├── init.lua                    # Entry point
+├── .preferences                # User preferences (mouse, ollama_model)
 ├── lua/
 │   ├── core/
 │   │   ├── options.lua        # Vim options
 │   │   ├── mappings.lua       # Keybindings
 │   │   ├── autocmds.lua       # Auto-commands
-│   │   └── appearance.lua     # Theme & font configuration
+│   │   ├── appearance.lua     # Theme configuration
+│   │   ├── preferences.lua    # Preferences system
+│   │   └── project.lua        # Project type detection
 │   ├── claude/                # Claude AI plugin
-│   │   ├── init.lua          # Main plugin logic
-│   │   ├── api.lua           # Claude API client
-│   │   └── ui.lua            # Response display
+│   │   ├── init.lua
+│   │   ├── api.lua
+│   │   └── ui.lua
 │   ├── airefactor/            # AI Refactor plugin (Ollama)
-│   │   ├── init.lua          # Main refactor logic
-│   │   ├── api.lua           # Ollama API client
-│   │   └── ui.lua            # Refactor UI (side-by-side diff)
+│   │   ├── init.lua
+│   │   ├── api.lua
+│   │   └── ui.lua
+│   ├── overseer/template/user/ # Task runner templates
+│   │   ├── gradle.lua
+│   │   ├── maven.lua
+│   │   ├── npm.lua
+│   │   └── make.lua
 │   └── plugins/
 │       ├── lazy_setup.lua     # Plugin definitions
 │       └── configs/           # Plugin configurations
-│           ├── lsp.lua
-│           ├── telescope.lua
-│           ├── cmp.lua
-│           ├── lualine.lua
-│           ├── dev-dash.lua
-│           └── ...
-├── plugin/
-│   ├── claude.lua             # Auto-loads Claude plugin
-│   └── airefactor.lua         # Auto-loads AIRefactor plugin
-└── ftplugin/                   # Filetype-specific configs
+└── ftplugin/                   # Language-specific configs
     ├── java.lua
     ├── python.lua
     ├── go.lua
+    ├── c.lua
+    ├── cpp.lua
     └── ...
 ```
 
 ---
 
-## Custom Settings & Personalization
+## Setup
 
-### AI Refactoring with Ollama Setup **NEW**
-
-The built-in AIRefactor plugin provides intelligent code refactoring suggestions using Ollama.
+### AI Refactoring with Ollama
 
 **Setup (one-time):**
+
 ```bash
-# Install Ollama (if not already installed)
+# Install Ollama
 curl -fsSL https://ollama.com/install.sh | sh
 
-# Pull the qwen3-coder model
+# Pull the model
 ollama pull qwen3-coder:30b
 
-# Start Ollama (runs as a service)
+# Start Ollama
 ollama serve
 ```
 
 **Usage:**
-1. **Refactor Code**:
-   - Highlight code with `v` / `V` / `Ctrl-v`
-   - Press `<leader>ra` or type `:AIRefactor`
-   - Wait for AI analysis
+1. Select code in visual mode
+2. Press `<leader>ra` or type `:AIRefactor`
+3. Review side-by-side comparison
+4. Press `a` to accept, `r` to reject, `q` to close
 
-2. **Review Suggestions**:
-   - View side-by-side comparison (original vs refactored)
-   - Read explanation and list of changes
-   - If no refactoring needed, AI will tell you
-
-3. **Accept or Reject**:
-   - Press `a` to accept and apply changes
-   - Press `r` to reject and keep original
-   - Press `q` to close without action
-
-**Features:**
-- Smart refactoring detection (only suggests when beneficial)
-- Detailed explanations of why changes improve code
-- Side-by-side diff view
-- **Drop-in replacement**: Refactored code is exact replacement for selected snippet
-- Import suggestions listed separately (add manually if needed)
-- Non-destructive (must explicitly accept)
-- Works with all languages
-- Uses local Ollama (no cloud API needed)
-
-**Customization:**
-Change the Ollama model in `~/.config/nvim/.preferences`:
-```bash
-echo "ollama_model=codellama:13b" >> ~/.config/nvim/.preferences
+**Customization** (in `~/.config/nvim/.preferences`):
 ```
-
-Or edit `/home/jsmitty/.config/nvim/plugin/airefactor.lua` to change:
-- Host: `http://localhost:11434` (default)
-- Timeout: 60 seconds (default)
-
-**Note:** If Ollama is not installed or not running, AIRefactor will be automatically disabled and hidden from which-key.
-
----
+ollama_model=codellama:13b
+```
 
 ### Claude AI Setup
 
-The built-in Claude plugin provides code explanations and development guidance.
-
-**Setup (one-time):**
 ```bash
-# RECOMMENDED: Create a separate private file for API keys
-# This keeps secrets out of your shell config files
-mkdir -p ~/.zsh
-touch ~/.zsh/.zshenv_private
-chmod 600 ~/.zsh/.zshenv_private  # Restrict permissions
-
-# Add your API key to the private file
-echo 'export ANTHROPIC_API_KEY="your-api-key-here"' >> ~/.zsh/.zshenv_private
-
-# Source it in your ~/.zshrc (add this line if not already present)
-echo 'if [[ -f "$HOME/.zsh/.zshenv_private" ]]; then' >> ~/.zshrc
-echo '  source "$HOME/.zsh/.zshenv_private"' >> ~/.zshrc
-echo 'fi' >> ~/.zshrc
-
-# For bash users, create and source a similar file
-touch ~/.bash_private
-chmod 600 ~/.bash_private
-echo 'export ANTHROPIC_API_KEY="your-api-key-here"' >> ~/.bash_private
-echo '[ -f ~/.bash_private ] && source ~/.bash_private' >> ~/.bashrc
+# Create private file for API key
+mkdir -p ~/.zsh && touch ~/.zsh/.zshenv_private && chmod 600 ~/.zsh/.zshenv_private
+echo 'export ANTHROPIC_API_KEY="your-key"' >> ~/.zsh/.zshenv_private
+echo 'source ~/.zsh/.zshenv_private' >> ~/.zshrc
 ```
 
-**Why use a separate private file?**
-- Keeps API keys out of version-controlled dotfiles
-- Easier to manage multiple secrets in one place
-- Prevents accidental exposure when sharing shell configs
-- Simple to add to `.gitignore` if you track your dotfiles
+### Preferences System
 
-**Usage:**
-1. **Explain Code**:
-   - Highlight code with `v` / `V` / `Ctrl-v`
-   - Type `:Explain` and press Enter
-   - Get intelligent explanation in markdown split
+All preferences in `~/.config/nvim/.preferences`:
 
-2. **Get Guidance**:
-   - Type `:Guide <your question>`
-   - Examples:
-     - `:Guide how to use vim motions`
-     - `:Guide build a shell in C`
-     - `:Guide explain async/await in JavaScript`
-
-**Features:**
-- Non-blocking async API calls
-- Markdown-formatted responses
-- Filetype-aware code explanations
-- Press `q` to close response window
-
-### Theme Configuration **UNIQUE**
-Easily customize your color theme with the appearance configuration system:
-
-**Available Themes:**
-- gruvbox-material (default)
-- gruvbox
-- catppuccin
-- nightfox
-- kanagawa
-- tokyonight
-
-**Commands:**
-```vim
-" View or change theme
-:Theme                     " Show available themes
-:Theme gruvbox-material    " Switch to gruvbox-material
-:Theme catppuccin          " Switch to catppuccin
-```
-
-To change default permanently, edit `lua/core/appearance.lua`:
-```lua
-M.selected_theme = "kanagawa"    -- Change default theme
-```
-
-### Preferences System **UNIQUE**
-
-All user preferences are stored in `~/.config/nvim/.preferences` in a simple key=value format.
-
-**Available preferences:**
-- `mouse` - Enable/disable mouse (true/false, default: false)
-- `ollama_model` - Ollama model for AIRefactor (default: qwen3-coder:30b)
-
-```bash
-# View preferences
-cat ~/.config/nvim/.preferences
-
-# Enable mouse
-echo "mouse=true" > ~/.config/nvim/.preferences
-
-# Disable mouse (default)
-echo "mouse=false" > ~/.config/nvim/.preferences
-
-# Change Ollama model
-echo "ollama_model=codellama:13b" >> ~/.config/nvim/.preferences
-```
-
-**Example `.preferences` file:**
 ```
 mouse=false
 ollama_model=qwen3-coder:30b
 ```
 
-Then restart Neovim. The old `.mouse` file is automatically migrated to `.preferences` on first load.
+### Spring Boot Tools (Optional)
 
-### General Settings
-- **Line numbers**: Relative + absolute hybrid
-- **Indentation**: 2 spaces default (language-specific in ftplugin)
-- **Clipboard**: System clipboard integrated (`unnamedplus`)
-- **Persistent undo**: 1000 levels, stored in cache directory
-- **No swap/backup files** - rely on git + auto-session
-- **Cursorline**: Enabled with VSCode Dark+ highlight
-- **Scroll context**: 8 lines top/bottom
+For enhanced Spring Boot support in Java files:
 
-### Search Behavior
-- Smart case-insensitive (case-sensitive if uppercase used)
-- Incremental search with highlight
-- `Esc` to clear highlights
-- `n/N` centers screen with `zzzv`
-
-### Splits & Windows
-- Vertical splits open right
-- Horizontal splits open below
-- Easy navigation with `Ctrl+hjkl`
-
-### Performance Optimizations
-- Disabled runtime plugins: gzip, tarPlugin, tohtml, tutor, zipPlugin
-- Update time: 250ms (LSP responsiveness)
-- Timeout: 300ms (which-key popup)
-- Lazy loading for all plugins except core
-
----
-
-## Auto-Commands
-
-- **Trim trailing whitespace** on save
-- **Highlight yanked text** (200ms flash)
-- **Auto-format Java** files on save
-- **Restore cursor position** when reopening files
-- **Disable auto-comment** on new lines
-- **Smart indent settings** per filetype
+1. Download jars from [sts4 releases](https://github.com/spring-projects/sts4/releases)
+2. Place in `~/.local/share/nvim/spring-boot-tools/`
+3. Uncomment the bundles line in `ftplugin/java.lua`
 
 ---
 
 ## Language Support
 
-**Complete development environments** for all languages I actually use. Everything else removed for performance.
-
 ### Java
-- **LSP**: Eclipse JDTLS (full enterprise Java support)
+
+- **LSP**: Eclipse JDTLS
 - **Formatter**: google-java-format
 - **Debugger**: java-debug-adapter + java-test
-- **Features**: Auto-format on save, organize imports, code lens
+- **Features**: Auto-format on save, organize imports, Spring Boot tools
 
 ### C/C++
+
 - **LSP**: clangd
 - **Formatter**: clang-format
 - **Debugger**: codelldb
-- **Features**: Compile commands support, header switching
+- **Features**: Compile commands, valgrind, GDB integration
 
 ### C#
+
 - **LSP**: OmniSharp
 - **Formatter**: csharpier
 - **Debugger**: netcoredbg
-- **Features**: .NET Core/Framework support, solution/project detection
 
 ### Go
+
 - **LSP**: gopls
-- **Formatters**: goimports → gofumpt (chain)
+- **Formatters**: goimports → gofumpt
 - **Debugger**: delve (via nvim-dap-go)
-- **Features**: Staticcheck, gofumpt on save, unused params detection
+- **Features**: Staticcheck, unused params detection
 
 ### Python
+
 - **LSP**: pyright
-- **Formatters**: isort → black (chain)
-- **Linter**: ruff (fast Rust-based linter)
+- **Formatters**: isort → black
+- **Linter**: ruff
 - **Debugger**: debugpy
-- **Features**: Type checking, auto-import sorting
 
 ### TypeScript/JavaScript/React
-- **LSP**: typescript-tools (enhanced tsserver)
-- **Formatters**: prettier → eslint_d (chain)
-- **Debugger**: js-debug-adapter (vscode-js-debug)
-- **Features**: Inlay hints, auto-import, JSX/TSX support
+
+- **LSP**: typescript-tools
+- **Formatters**: prettier → eslint_d
+- **Debugger**: js-debug-adapter
+- **Features**: Inlay hints, auto-import
 
 ### HTML/CSS/SCSS
+
 - **LSP**: html-lsp, css-lsp, emmet-ls
 - **Formatter**: prettier
-- **Features**: Emmet expansion, auto-close tags
 
 ### Bash/Zsh
+
 - **LSP**: bash-language-server
 - **Linter**: shellcheck
-- **Features**: Shell script validation, completion
 
 ### Lua
-- **LSP**: lua-language-server (Neovim-configured)
+
+- **LSP**: lua-language-server
 - **Formatter**: stylua
-- **Linter**: luacheck
-- **Features**: Neovim API completion, `vim` global recognized
 
 ---
 
 ## Session Management
 
-Sessions automatically save on exit and restore on startup.
-
-### How It Works
-- **Auto-save**: Saves your workspace (buffers, splits, positions) when you exit nvim
-- **Auto-restore**: Restores your exact layout when you reopen nvim in the same directory
-- **Per git branch**: Each git branch gets its own session (switch branches = different session)
-- **Excluded dirs**: Sessions are NOT saved in `~/`, `~/Downloads`, or `/`
-
-### Keybindings & Commands
-- `<leader>fs` - Find/restore sessions (Telescope fuzzy finder)
-- `<leader>fd` - Delete session (Telescope fuzzy finder with confirmation)
-- `:AutoSession save` - Manual save current session
-- `:AutoSession delete` - Delete current session
-
-### What Gets Saved
-Buffers, splits, window positions, folds, tabs, terminal windows, and local options.
+- **Auto-save**: Workspace saved when exiting nvim
+- **Auto-restore**: Layout restored when reopening in same directory
+- **Per git branch**: Each branch gets its own session
+- **Session picker**: `<leader>fs` to find, `<leader>fd` to delete
 
 ---
 
 ## Performance
 
-**Startup Time**: 67ms average (measured with hyperfine over 100 runs)
+**Startup Time**: 67ms average
 
-- Bare Neovim: 20-30ms
-- This config: **67ms** (50+ plugins, lazy loaded)
-- Most configs: 100-300ms
-- Heavy configs: 500ms+
-
-**Benchmark Results:**
 ```
 Benchmark 1: nvim +q
-  Time (mean ± σ):      66.9 ms ±   6.1 ms    [User: 50.6 ms, System: 15.6 ms]
+  Time (mean ± σ):      66.9 ms ±   6.1 ms
   Range (min … max):    56.3 ms …  82.9 ms    100 runs
 ```
 
 ### Benchmark Your Config
 
 ```bash
-# Quick timing
 time nvim +q
-
-# Detailed startup log
 nvim --startuptime startup.log +q && cat startup.log
-
-# Plugin profiling (inside nvim)
 :Lazy profile
 ```
 
@@ -699,12 +547,13 @@ nvim --startuptime startup.log +q && cat startup.log
 
 - **Neovim** 0.11+
 - **Git**
-- **Ripgrep** (for telescope live_grep)
+- **Ripgrep** (for telescope live_grep, grug-far)
 - **Make** (for telescope-fzf-native)
 - **Node.js** (for some LSP servers)
 - **curl** (for Claude AI plugin)
 - **LazyGit** (optional, for `<leader>gg`)
 - **Nerd Font** (for icons)
+- **jq** (optional, for REST client JSON formatting)
 
 ---
 
@@ -717,11 +566,10 @@ mv ~/.config/nvim ~/.config/nvim.backup
 # Clone this config
 git clone https://github.com/JacobSmxth/Ichthys ~/.config/nvim
 
-# Set up Claude AI (optional but recommended)
-# Create a private file for API keys (more secure than adding to shell configs)
+# Set up Claude AI (optional)
 mkdir -p ~/.zsh && touch ~/.zsh/.zshenv_private && chmod 600 ~/.zsh/.zshenv_private
 echo 'export ANTHROPIC_API_KEY="your-key"' >> ~/.zsh/.zshenv_private
-echo 'if [[ -f "$HOME/.zsh/.zshenv_private" ]]; then source "$HOME/.zsh/.zshenv_private"; fi' >> ~/.zshrc
+echo 'source ~/.zsh/.zshenv_private' >> ~/.zshrc
 
 # Open nvim - plugins auto-install
 nvim
@@ -729,29 +577,15 @@ nvim
 
 ---
 
-## Why This Config Exists
+## Design Principles
 
-### The Problem with Most Configs
-- **Too general**: Try to support every language under the sun
-- **Performance suffers**: 300-500ms startups are common
-- **Outdated patterns**: Still using deprecated APIs
-- **Demo-ware**: LSP/DAP configured but not production-ready
-
-### My Approach
 1. **Personalized**: Only languages I use = faster everything
-2. **Performance-obsessed**: 67ms startup through strategic lazy loading and optimization
+2. **Performance-obsessed**: 67ms startup through strategic lazy loading
 3. **Modern**: Neovim 0.11+ APIs that most configs haven't adopted
 4. **Production-ready**: Every language has LSP + formatter + linter + debugger
-5. **AI-Enhanced**: Local Ollama refactoring without sacrificing performance
-6. **Faith-centered**: Built with intentionality to glorify God
-
-### Design Principles
-- **No bloat**: If I don't use it, it's not here
-- **Custom keybinds**: "Go inner" operator, centered search, etc.
-- **Smart defaults**: Mouse toggle, jj escape, space leader
-- **Maintainable**: Clean structure, well-commented, modular
-
-"Commit thy works unto the Lord, and thy thoughts shall be established." - Proverbs 16:3 KJV
+5. **AI-Enhanced**: Local Ollama refactoring without cloud dependency
+6. **No bloat**: If I don't use it, it's not here
+7. **Understanding over abstraction**: Native LSP over wrapper plugins
 
 ---
 
@@ -762,373 +596,19 @@ nvim
 - You want a **fast**, opinionated setup
 - You value performance over trying every new plugin
 - You want debugger support, not just LSP
-- You appreciate faith-centered development
+- You appreciate backend-focused development
 
 **This config is NOT for you if:**
 - You need Rust, Zig, Haskell, or other languages not listed
 - You want a minimal "learn Neovim" setup (try kickstart.nvim)
-- You prefer distributions like LazyVim/NvChad (this is personalized, not general)
+- You prefer distributions like LazyVim/NvChad
 
 ---
 
 ## Fork It, Make It Yours
 
-This is my **personal** config. I encourage you to:
-1. Fork it
-2. Remove languages you don't use
-3. Add your own keybinds
-4. Adjust the theme
-5. Make it yours
-
-The `.preferences` file system and "go inner" operators are examples of how to personalize beyond just changing options.
+This is my **personal** config. Fork it, remove what you don't need, add your own keybinds, and make it yours.
 
 ---
 
-## Everything Different from Vanilla Neovim
-
-This is a comprehensive list of **every change** from stock Neovim. Perfect for understanding what you're getting.
-
-### Keybindings Changed/Added
-
-#### Disabled Keys (Training Wheels Off)
-- **Arrow keys** - Disabled in normal, insert, and visual modes (forces hjkl)
-- **Mouse** - Disabled by default (toggle via `.preferences` file)
-
-#### Custom Escape & Navigation
-- `jj` → Escape (insert and terminal modes)
-- `Shift+H` / `Shift+L` → Previous/Next buffer
-- `Ctrl+h/j/k/l` → Navigate between windows
-- `<leader><leader>` (Space+Space) → Toggle between last two buffers
-- `-` → Open parent directory in Oil.nvim
-- `<leader>-` → Open Oil in floating window
-- `Esc` → Clear search highlights
-
-#### Search Improvements
-- `n` / `N` → Next/previous search result (centered with `zzzv`)
-
-#### Line Movement
-- `Alt+j` / `Alt+k` → Move lines up/down (visual mode too)
-
-#### Visual Mode Enhancements
-- `<` / `>` → Indent/outdent and stay in visual mode
-
-#### Custom "Go Inner" Operators **UNIQUE TO THIS CONFIG**
-Select inside text object and jump to end (custom implementation):
-- `git` / `gi"` / `gi'` / `gi\`` / `gi(` / `gi)` / `gib` / `gi{` / `gi}` / `giB` / `gi[` / `gi]` / `gi<` / `gi>`
-
-#### Leader Key Mappings (Space as Leader)
-**File Explorer:**
-- `<leader>e` → Toggle nvim-tree
-- `<leader>a` → Toggle Aerial code outline
-
-**Telescope (Fuzzy Finding):**
-- `<leader>/` → Fuzzy find in current buffer
-- `<leader>ff` → Find files
-- `<leader>fg` → Live grep (search in files)
-- `<leader>fb` → Find buffers
-- `<leader>fs` → Find/restore sessions
-- `<leader>fd` → Delete session (with confirmation)
-- `<leader>fm` → Find man pages (custom Telescope picker)
-
-**Harpoon (Quick Bookmarks):**
-- `<leader>ha` → Add file to harpoon
-- `<leader>hh` → Toggle harpoon menu
-- `<leader>h1-4` → Jump to harpoon files 1-4
-- `<leader>hn/hp` → Next/previous harpoon file
-
-**LSP (Language Server):**
-- `gd` → Go to definition
-- `gD` → Go to declaration
-- `gr` → Go to references
-- `gI` → Go to implementation
-- `gh` → Hover documentation
-- `Ctrl+k` → Signature help (normal and insert mode)
-- `<leader>D` → Type definition
-- `<leader>rn` → Rename symbol
-- `<leader>ca` → Code action
-- `<leader>cl` → Run code lens
-- `[d` / `]d` → Previous/next diagnostic
-
-**Editing:**
-- `<leader>i` → Fix indentation for entire file
-- `gc` / `gcc` → Comment/uncomment (mini.comment)
-- `sa` / `sd` / `sr` → Surround add/delete/replace (mini.surround)
-- `m` → Flash jump to word
-- `M` → Flash Treesitter (syntax-aware jump)
-
-**Windows:**
-- `<leader>wv` → Vertical split
-- `<leader>ws` → Horizontal split
-- `<leader>wq` → Close window
-- `<leader>wo` → Close other windows
-
-**Git:**
-- `<leader>gg` → Open LazyGit
-
-**Dev Dashboard:**
-- `<leader>d` → Open developer dashboard (git status, diagnostics, TODOs, system info)
-  - `q` in dashboard → Close
-  - `r` in dashboard → Refresh
-
-**Debugging (DAP):**
-- `<leader>db` → Toggle breakpoint
-- `<leader>dc` → Continue
-- `<leader>di` → Step into
-- `<leader>do` → Step over
-- `<leader>dO` → Step out
-- `<leader>dr` → Toggle REPL
-- `<leader>dl` → Run last
-- `<leader>dt` → Terminate
-- `<leader>du` → Toggle debug UI
-
-**Diagnostics:**
-- `<leader>xx` → Toggle diagnostics (Trouble)
-- `<leader>xd` → Buffer diagnostics
-- `<leader>xq` → Quickfix list
-
-**REST Client (Kulala):**
-- `<leader>kr` → Run HTTP request (.http files)
-- `<leader>kt` → Toggle headers/body
-- `<leader>kc` → Copy as cURL
-
-**Other:**
-- `<leader>u` → Undo tree (Telescope)
-- `<leader>bd` → Delete buffer
-- `Ctrl+\` → Toggle terminal
-- `<leader>ot` → Toggle Codeium AI
-
-**Completion (nvim-cmp):**
-- `<Tab>` → Next completion item
-- `<S-Tab>` → Previous completion item
-- `<CR>` → Confirm selection
-- `<C-j>` / `<C-k>` → Next/previous item (vim-style)
-
-**AI Completion (Codeium):**
-- `<C-y>` → Accept suggestion
-- `Alt+h` / `Alt+l` → Cycle suggestions
-- `Ctrl+x` → Clear suggestion
-
-**AI Refactoring (Ollama):**
-- `<leader>ra` → AI refactor selected code (visual mode)
-
-### Editor Behavior Changes
-
-#### Line Numbers
-- **Relative + absolute hybrid** - Shows current line number + relative distances
-
-#### Indentation
-- **2 spaces** by default (overridden per-language in ftplugin)
-- **Smart indent** enabled
-- **Expand tab** - always uses spaces, never tabs
-
-#### Cursor & Scrolling
-- **Cursorline highlight** - Current line highlighted
-- **Scroll offset 8** - Keeps 8 lines above/below cursor
-- **Block cursor** in all modes
-
-#### Clipboard
-- **System clipboard integration** - Yank/paste works with OS clipboard
-
-#### Undo System
-- **Persistent undo** - Undo history saved between sessions
-- **1000 undo levels**
-- **Undo directory** - `~/.local/share/nvim/undo/`
-
-#### Files & Backups
-- **No swap files**
-- **No backup files**
-- **No writebackup**
-- **Hidden buffers** - Can switch buffers without saving
-
-#### Search
-- **Smart case** - Case-insensitive unless uppercase used
-- **Incremental search**
-- **Highlight search results**
-
-#### Splits
-- **Split right** - Vertical splits open to the right
-- **Split below** - Horizontal splits open below
-
-#### UI
-- **No mode indicator** (shown in statusline instead)
-- **Sign column always visible**
-- **Popup menu height 10**
-- **No line wrapping** by default
-- **True color support**
-- **Conceallevel 0** - Show everything (no hidden syntax)
-
-#### Performance
-- **Update time 250ms** - Faster LSP/CursorHold
-- **Timeout 300ms** - Which-key popup delay
-- **Disabled runtime plugins**: gzip, tarPlugin, tohtml, tutor, zipPlugin
-
-#### Mouse
-- **Disabled by default** - Toggle via `~/.config/nvim/.preferences` file (set `mouse=true` or `mouse=false`)
-
-### Auto-Commands
-
-- **Trim trailing whitespace** on save
-- **Highlight yanked text** for 200ms
-- **Auto-format Java files** on save
-- **Restore cursor position** when reopening files
-- **Disable auto-comment** on new lines
-- **LSP inlay hints** auto-enabled when supported
-- **Code lens refresh** on BufEnter, CursorHold, InsertLeave
-
-### Theme & Colors
-
-- **6 beautiful color themes**: gruvbox-material (default), gruvbox, catppuccin, nightfox, kanagawa, tokyonight
-- **Easy theme switching** with `:Theme` command and tab completion
-- **Centralized theme config** in `lua/core/appearance.lua`
-
-### Language Support (Everything Auto-Installed)
-
-#### Java
-- Eclipse JDTLS, google-java-format, java-debug-adapter, java-test
-- Auto-format on save, organize imports
-
-#### C/C++
-- clangd, clang-format, codelldb
-
-#### C#
-- OmniSharp, csharpier, netcoredbg
-
-#### Go
-- gopls, goimports, gofumpt, delve, nvim-dap-go
-
-#### Python
-- pyright, black, isort, ruff, debugpy, nvim-dap-python
-
-#### TypeScript/JavaScript
-- typescript-tools, prettier, eslint_d, js-debug-adapter
-
-#### HTML/CSS/SCSS
-- html-lsp, css-lsp, emmet-ls, prettier
-
-#### Bash/Zsh
-- bash-language-server, shellcheck
-
-#### Lua
-- lua-language-server (configured for Neovim), stylua, luacheck
-
-### Plugins Added (50+)
-
-See "Plugins" section above for full list. Every plugin is **lazy-loaded** for performance.
-
-### Session Management
-
-- **Auto-save sessions** on exit (per directory)
-- **Auto-restore sessions** on startup
-- **Git branch awareness** - Different session per branch
-- **Excluded directories**: `~/`, `~/Downloads`, `/`
-
-### Startup Dashboard
-
-- **Custom ASCII art** header with "ICHTHYS"
-- **Bible verse footer**: Proverbs 16:3 KJV
-- **Quick actions**: New file, recent files, find file, grep, settings, quit
-
-### File Structure
-
-```
-~/.config/nvim/
-├── init.lua                  # Entry point
-├── .preferences              # User preferences (mouse, ollama_model)
-├── lua/
-│   ├── core/
-│   │   ├── options.lua      # All vim options
-│   │   ├── mappings.lua     # All keybindings
-│   │   ├── autocmds.lua     # Auto-commands
-│   │   ├── appearance.lua   # Theme & font configuration
-│   │   ├── preferences.lua  # Preferences system
-│   │   └── migrate_preferences.lua  # Auto-migrate old .mouse file
-│   ├── airefactor/          # AI Refactor plugin (Ollama)
-│   │   ├── init.lua
-│   │   ├── api.lua
-│   │   └── ui.lua
-│   └── plugins/
-│       ├── lazy_setup.lua   # All plugin definitions
-│       └── configs/         # Plugin configurations
-│           ├── lsp.lua
-│           ├── cmp.lua
-│           ├── telescope.lua
-│           ├── codeium.lua
-│           └── ...
-├── plugin/
-│   └── airefactor.lua       # Auto-load AIRefactor if Ollama available
-└── ftplugin/                 # Language-specific configs
-    ├── java.lua
-    ├── python.lua
-    ├── go.lua
-    └── ...
-```
-
-### What's NOT Changed
-
-- **Vim motions** - All standard hjkl, w/b/e, f/t, etc. work normally
-- **Ex commands** - All `:` commands work as expected
-- **Macros** - `q` to record, `@` to play
-- **Marks** - `m` and `` ` `` work (except `m` remapped to Hop in normal mode)
-- **Registers** - All registers work normally
-- **Visual block mode** - `Ctrl+v` unchanged
-
-### Summary Stats
-
-- **50+ plugins** installed
-- **9 language environments** fully configured
-- **100+ custom keybindings**
-- **67ms startup time** (benchmarked over 100 runs)
-- **3 AI tools** (Codeium, Ollama, Claude)
-- **6 lines sticky scroll** (treesitter-context)
-- **0 swap files** ever created
-- **∞ undo history** (persisted across sessions)
-
-### New in Latest Update
-
-**Dev Dashboard (`<leader>d`):**
-- Quick project overview with git status, diagnostics, TODOs, and system info
-- Real-time refresh capability
-- Searches only current project for TODOs
-
-**Enhanced Lualine:**
-- Shows active LSP servers
-- Displays Codeium status when disabled
-- Macro recording indicator
-- Search result counter
-- File size and selection count
-
-**Mini.nvim Suite:**
-- Replaced 5 plugins with lightweight mini.nvim modules
-- `mini.pairs`, `mini.comment`, `mini.surround`, `mini.indentscope`, `mini.icons`
-- Better performance, consistent APIs
-
-**Flash Motion:**
-- Replaced hop.nvim with more powerful flash.nvim
-- Treesitter-aware jumping
-- Better labeling algorithm
-
-**Better UI:**
-- `noice.nvim` for fancy command-line and messages
-- `nvim-notify` for beautiful notification animations
-- `dressing.nvim` for telescope-based select/input prompts
-- Filters out annoying messages automatically
-
-**Task Runner:**
-- `overseer.nvim` with custom templates for Gradle, Maven, NPM, and Make
-- Unified UI for running build tasks across different project types
-- Integrates with toggleterm for task output
-
-**Zen Mode:**
-- `zen-mode.nvim` for distraction-free coding
-- Disables diagnostics and UI elements when focused
-- `<leader>z` to toggle
-
-**AI-Powered Refactoring:**
-- `airefactor` plugin using Ollama and qwen3-coder:30b
-- Intelligent code analysis with refactoring suggestions
-- Side-by-side diff view with detailed explanations
-- Approve/reject workflow for safe refactoring
-- Works offline with local Ollama instance
-- `<leader>ra` to refactor selected code
-
-This config turns Neovim into a **full IDE** while keeping the modal editing and performance that makes Neovim special.
+"Commit thy works unto the Lord, and thy thoughts shall be established." - Proverbs 16:3 KJV

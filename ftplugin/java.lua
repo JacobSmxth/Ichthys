@@ -46,7 +46,7 @@ local config = {
       -- Download from: https://github.com/spring-projects/sts4/releases
       -- Extract and place jars in ~/.local/share/nvim/spring-boot-tools/
       -- Provides: @Bean navigation, application.properties completion, Spring code actions
-      -- vim.fn.glob(vim.fn.stdpath("data") .. "/spring-boot-tools/*.jar", true),
+      vim.fn.glob(vim.fn.stdpath("data") .. "/spring-boot-tools/*.jar", true),
     },
   },
 }
