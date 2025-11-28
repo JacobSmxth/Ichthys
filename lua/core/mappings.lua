@@ -27,9 +27,56 @@ map("n", "<leader>/", ":Telescope current_buffer_fuzzy_find<CR>", { noremap = tr
 map("n", "n", "nzzzv", opts)
 map("n", "N", "Nzzzv", opts)
 
-map("n", "<leader>ff", ":Telescope find_files<CR>", opts)
-map("n", "<leader>fg", ":Telescope live_grep<CR>", opts)
-map("n", "<leader>fb", ":Telescope buffers<CR>", opts)
+-- Telescope finder mappings
+map("n", "<leader>ff", ":Telescope find_files<CR>", { noremap = true, silent = true, desc = "Find files" })
+map("n", "<leader>fg", ":Telescope live_grep<CR>", { noremap = true, silent = true, desc = "Live grep" })
+map("n", "<leader>fb", ":Telescope buffers<CR>", { noremap = true, silent = true, desc = "Find buffers" })
+map("n", "<leader>fh", ":Telescope help_tags<CR>", { noremap = true, silent = true, desc = "Find help" })
+map("n", "<leader>fk", ":Telescope keymaps<CR>", { noremap = true, silent = true, desc = "Find keymaps" })
+map("n", "<leader>fc", ":Telescope commands<CR>", { noremap = true, silent = true, desc = "Find commands" })
+map("n", "<leader>fr", ":Telescope oldfiles<CR>", { noremap = true, silent = true, desc = "Recent files" })
+map("n", "<leader>ft", ":Telescope filetypes<CR>", { noremap = true, silent = true, desc = "Find filetypes" })
+map("n", "<leader>fD", function()
+  local ok_pickers, pickers = pcall(require, "telescope.pickers")
+  local ok_finders, finders = pcall(require, "telescope.finders")
+  local ok_conf, conf = pcall(require, "telescope.config")
+  local ok_actions, actions = pcall(require, "telescope.actions")
+  local ok_action_state, action_state = pcall(require, "telescope.actions.state")
+
+  if not (ok_pickers and ok_finders and ok_conf and ok_actions and ok_action_state) then
+    vim.notify("Telescope not available", vim.log.levels.ERROR)
+    return
+  end
+
+  -- Get directories using fd or find
+  local cmd = vim.fn.executable("fd") == 1
+    and "fd --type d --hidden --exclude .git --max-depth 5"
+    or "find . -type d -not -path '*/\\.git/*' 2>/dev/null"
+
+  pickers.new({}, {
+    prompt_title = "Find Directories",
+    finder = finders.new_oneshot_job(vim.split(cmd, " ")),
+    sorter = conf.values.file_sorter({}),
+    attach_mappings = function(prompt_bufnr)
+      actions.select_default:replace(function()
+        local selection = action_state.get_selected_entry()
+        actions.close(prompt_bufnr)
+        if selection then
+          -- Open Oil in the selected directory
+          local oil_ok, oil = pcall(require, "oil")
+          if oil_ok then
+            oil.open(selection[1])
+          else
+            -- Fallback: just cd if Oil isn't available
+            vim.cmd("cd " .. selection[1])
+            vim.notify("Changed directory to: " .. selection[1], vim.log.levels.INFO)
+          end
+        end
+      end)
+      return true
+    end,
+  }):find()
+end, { noremap = true, silent = true, desc = "Find directories" })
 map("n", "<leader>fs", ":AutoSession search<CR>", { noremap = true, silent = true, desc = "Find sessions" })
 map("n", "<leader>fd", function()
   local ok_pickers, pickers = pcall(require, "telescope.pickers")

@@ -24,10 +24,8 @@ local function on_attach(client, bufnr)
   map("n", "]d", vim.diagnostic.goto_next, "Next diagnostic")
   map("n", "<leader>ld", vim.diagnostic.open_float, "Show diagnostic")
 
-  -- Enable inlay hints if supported
-  if client.server_capabilities.inlayHintProvider then
-    vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
-  end
+  -- Explicitly disable inlay hints due to synchronization issues
+  pcall(vim.lsp.inlay_hint.enable, false, { bufnr = bufnr })
 end
 
 -- Helper to setup LSP server
