@@ -28,9 +28,20 @@ local function escape_json(str)
 end
 
 local function parse_response(json_str)
+  -- Check for API errors first
+  local error_type = json_str:match('"type"%s*:%s*"error"')
+  if error_type then
+    local error_msg = json_str:match('"message"%s*:%s*"([^"]+)"') or "Unknown API error"
+    return "API Error: " .. error_msg
+  end
+
   local content_match = json_str:match('"text"%s*:%s*"(.-)"[^"]*}%s*]')
   if not content_match then
-    return json_str
+    -- Log the raw response for debugging but return user-friendly message
+    vim.schedule(function()
+      vim.notify("Failed to parse Claude API response. Check if API key is valid.", vim.log.levels.ERROR)
+    end)
+    return "Error: Unable to parse response from Claude API. Please check your API key and try again."
   end
 
   local text = content_match:gsub("\\n", "\n")
@@ -132,6 +143,16 @@ Respond now.]]
       if data then
         local result = table.concat(data, "\n")
         os.remove(tmp_file)
+
+        -- Check if we got empty response
+        if result == "" or result == "\n" then
+          vim.schedule(function()
+            vim.notify("Empty response from Claude API. Check your internet connection.", vim.log.levels.ERROR)
+          end)
+          callback("Error: Empty response from API")
+          return
+        end
+
         local parsed = parse_response(result)
         callback(parsed)
       end
@@ -141,13 +162,18 @@ Respond now.]]
         local err = table.concat(data, "\n")
         if err ~= "" then
           vim.schedule(function()
-            vim.api.nvim_err_writeln("Error: " .. err)
+            vim.api.nvim_err_writeln("cURL Error: " .. err)
           end)
         end
       end
     end,
-    on_exit = function()
+    on_exit = function(_, exit_code)
       os.remove(tmp_file)
+      if exit_code ~= 0 then
+        vim.schedule(function()
+          vim.notify("Claude API request failed with exit code: " .. exit_code, vim.log.levels.ERROR)
+        end)
+      end
     end,
   })
 end

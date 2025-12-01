@@ -238,6 +238,8 @@ require("lazy").setup({
       local s = ls.snippet
       local t = ls.text_node
       local f = ls.function_node
+      local i = ls.insert_node
+      local c = ls.choice_node
 
       local lorem_words = {
         "lorem", "ipsum", "dolor", "sit", "amet", "consectetur", "adipiscing", "elit",
@@ -265,6 +267,29 @@ require("lazy").setup({
         s("lorem100", f(function() return generate_lorem(100) end)),
         s("lorem200", f(function() return generate_lorem(200) end)),
         s("lorem500", f(function() return generate_lorem(500) end)),
+      })
+
+      ls.add_snippets("java", {
+        s("sout", {
+          t("System.out.println("),
+          i(1, '"message"'),
+          t(");"),
+        }),
+        s("psvm", {
+          t({ "public static void main(String[] args) {", "  " }),
+          i(0),
+          t({ "", "}" }),
+        }),
+        s("log", {
+          t("log."),
+          c(1, { t("info"), t("debug"), t("warn"), t("error") }),
+          t('("'),
+          i(2, "message"),
+          t('");'),
+        }),
+        s("@rest", t("@RestController")),
+        s("@get", { t('@GetMapping("'), i(1, "/path"), t('")') }),
+        s("@post", { t('@PostMapping("'), i(1, "/path"), t('")') }),
       })
     end,
   },
@@ -479,19 +504,33 @@ require("lazy").setup({
 
       local function toggle_oil_sidebar()
         -- Check if sidebar exists and is valid
-        if oil_sidebar_winid and vim.api.nvim_win_is_valid(oil_sidebar_winid) then
-          vim.api.nvim_win_close(oil_sidebar_winid, true)
-          oil_sidebar_winid = nil
-        else
-          -- Open Oil in a vertical split on the left
-          vim.cmd("topleft vsplit")
-          require("oil").open()
-          oil_sidebar_winid = vim.api.nvim_get_current_win()
-          vim.api.nvim_win_set_width(oil_sidebar_winid, 35)
-
-          -- Mark this window as the Oil sidebar
-          vim.w.is_oil_sidebar = true
+        if oil_sidebar_winid then
+          if vim.api.nvim_win_is_valid(oil_sidebar_winid) then
+            -- Also verify the buffer is still valid
+            local buf = vim.api.nvim_win_get_buf(oil_sidebar_winid)
+            if not vim.api.nvim_buf_is_valid(buf) then
+              oil_sidebar_winid = nil
+            else
+              vim.api.nvim_win_close(oil_sidebar_winid, true)
+              oil_sidebar_winid = nil
+              return
+            end
+          else
+            oil_sidebar_winid = nil
+          end
         end
+
+        -- Only open if we don't have a valid sidebar
+        if not oil_sidebar_winid then
+        -- Open Oil in a vertical split on the left
+        vim.cmd("topleft vsplit")
+        require("oil").open()
+        oil_sidebar_winid = vim.api.nvim_get_current_win()
+        vim.api.nvim_win_set_width(oil_sidebar_winid, 35)
+
+        -- Mark this window as the Oil sidebar
+        vim.w.is_oil_sidebar = true
+      end
       end
 
       -- Set up autocmd to handle Oil buffer keymaps in sidebar
@@ -500,6 +539,12 @@ require("lazy").setup({
         callback = function()
           -- Only apply custom keymap if this is the sidebar window
           if vim.w.is_oil_sidebar then
+            -- Window navigation while in sidebar
+            vim.keymap.set("n", "<C-h>", "<C-w>h", { buffer = true })
+            vim.keymap.set("n", "<C-l>", "<C-w>l", { buffer = true })
+            vim.keymap.set("n", "<C-j>", "<C-w>j", { buffer = true })
+            vim.keymap.set("n", "<C-k>", "<C-w>k", { buffer = true })
+
             vim.keymap.set("n", "<CR>", function()
               local oil = require("oil")
               local entry = oil.get_cursor_entry()
@@ -544,6 +589,16 @@ require("lazy").setup({
                 oil.select()
               end
             end, { buffer = true, desc = "Open in main window" })
+          end
+        end,
+      })
+
+      -- Clear sidebar handle if the buffer/window goes away
+      vim.api.nvim_create_autocmd({ "BufWipeout", "WinClosed" }, {
+        pattern = "*",
+        callback = function(args)
+          if oil_sidebar_winid and args.match == tostring(oil_sidebar_winid) then
+            oil_sidebar_winid = nil
           end
         end,
       })

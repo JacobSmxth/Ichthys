@@ -25,6 +25,17 @@ end
 function M.refactor(opts)
   opts = opts or {}
 
+  -- Check Ollama availability first
+  api.check_ollama_running(M.config, function(is_running)
+    if not is_running then
+      vim.notify(
+        "Ollama is not running at " .. M.config.host .. ". Please start Ollama first.",
+        vim.log.levels.ERROR
+      )
+      return
+    end
+  end)
+
   local start_line, end_line
 
   if opts.line1 and opts.line2 then

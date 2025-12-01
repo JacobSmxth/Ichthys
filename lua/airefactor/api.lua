@@ -1,5 +1,25 @@
 local M = {}
 
+-- Health check for Ollama availability
+function M.check_ollama_running(config, callback)
+  local url = config.host .. "/api/tags"
+
+  vim.fn.jobstart({
+    "curl",
+    "-s",
+    "--max-time", "2",
+    url,
+  }, {
+    on_exit = function(_, exit_code)
+      vim.schedule(function()
+        callback(exit_code == 0)
+      end)
+    end,
+    stdout_buffered = true,
+    stderr_buffered = true,
+  })
+end
+
 function M.generate(prompt, config, callback)
   local url = config.host .. "/api/generate"
 

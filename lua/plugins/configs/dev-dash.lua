@@ -155,8 +155,12 @@ local function get_spring_boot_info()
       if port then
         table.insert(lines, "Port: " .. port)
 
-        -- Check if port is in use (app running)
-        local port_check = vim.fn.system("lsof -i:" .. port .. " 2>/dev/null | grep LISTEN")
+        -- Check if port is in use (app running) - Linux/macOS compatible
+        local port_check_cmd = vim.fn.has("linux") == 1
+          and "lsof -i:" .. port .. " 2>/dev/null | grep LISTEN"
+          or "lsof -nP -iTCP:" .. port .. " -sTCP:LISTEN 2>/dev/null"
+
+        local port_check = vim.fn.system(port_check_cmd)
         if port_check ~= "" then
           table.insert(lines, "Status: Running")
         else
@@ -258,6 +262,8 @@ end
 
 local function get_system_info()
   local lines = {}
+  local is_linux = vim.fn.has("linux") == 1
+  local is_mac = vim.fn.has("mac") == 1
 
   -- Try to get system info (Linux-specific)
   local uname = vim.fn.system("uname -sr 2>/dev/null"):gsub("\n", "")
@@ -265,26 +271,41 @@ local function get_system_info()
     table.insert(lines, "System: " .. uname)
   end
 
-  -- Memory info
-  local mem_info = vim.fn.systemlist("free -h 2>/dev/null | grep Mem")
-  if #mem_info > 0 then
-    local mem_line = mem_info[1]
-    local total, used = mem_line:match("Mem:%s+(%S+)%s+(%S+)")
-    if total and used then
-      table.insert(lines, string.format("Memory: %s / %s", used, total))
+  -- Memory info (OS-specific)
+  if is_linux then
+    local mem_info = vim.fn.systemlist("free -h 2>/dev/null | grep Mem")
+    if #mem_info > 0 then
+      local mem_line = mem_info[1]
+      local total, used = mem_line:match("Mem:%s+(%S+)%s+(%S+)")
+      if total and used then
+        table.insert(lines, string.format("Memory: %s / %s", used, total))
+      end
+    end
+  elseif is_mac then
+    -- macOS doesn't have 'free' command, skip or use alternative
+    local mem = vim.fn.system("vm_stat 2>/dev/null | grep 'Pages free'"):gsub("\n", "")
+    if mem ~= "" then
+      table.insert(lines, "Memory: (use Activity Monitor for details)")
     end
   end
 
-  -- CPU load
-  local load = vim.fn.system("cat /proc/loadavg 2>/dev/null"):gsub("\n", "")
-  if load ~= "" then
-    local load1, load5, load15 = load:match("(%S+)%s+(%S+)%s+(%S+)")
-    if load1 then
-      table.insert(lines, string.format("Load: %s (1m) %s (5m) %s (15m)", load1, load5, load15))
+  -- CPU load (OS-specific)
+  if is_linux then
+    local load = vim.fn.system("cat /proc/loadavg 2>/dev/null"):gsub("\n", "")
+    if load ~= "" then
+      local load1, load5, load15 = load:match("(%S+)%s+(%S+)%s+(%S+)")
+      if load1 then
+        table.insert(lines, string.format("Load: %s (1m) %s (5m) %s (15m)", load1, load5, load15))
+      end
+    end
+  elseif is_mac then
+    local load = vim.fn.system("sysctl -n vm.loadavg 2>/dev/null"):gsub("\n", "")
+    if load ~= "" then
+      table.insert(lines, "Load: " .. load)
     end
   end
 
-  -- Disk usage for current directory
+  -- Disk usage for current directory (works on both Linux/macOS)
   local disk = vim.fn.system("df -h . 2>/dev/null | tail -1")
   if disk ~= "" then
     local usage, avail, percent = disk:match("%S+%s+%S+%s+(%S+)%s+(%S+)%s+(%S+)")

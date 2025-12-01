@@ -20,7 +20,23 @@ if not root_dir or root_dir == "" then
 end
 
 local jdtls_bin = vim.fn.expand("~/.local/share/nvim/mason/bin/jdtls")
+
+-- Verify jdtls binary exists
+if vim.fn.executable(jdtls_bin) ~= 1 then
+  vim.notify("jdtls not found at " .. jdtls_bin .. ". Run :Mason to install.", vim.log.levels.ERROR)
+  return
+end
+
 local workspace_dir = vim.fn.stdpath("data") .. "/jdtls-workspaces/" .. vim.fn.fnamemodify(root_dir, ":p:h:t")
+
+-- Ensure workspace directory exists
+if vim.fn.isdirectory(workspace_dir) == 0 then
+  local ok = vim.fn.mkdir(workspace_dir, "p")
+  if ok == 0 then
+    vim.notify("Failed to create workspace directory: " .. workspace_dir, vim.log.levels.ERROR)
+    return
+  end
+end
 
 local config = {
   cmd = { jdtls_bin, "-data", workspace_dir },
@@ -72,6 +88,17 @@ map("n", "<leader>cg", function()
   vim.cmd(string.format("TermExec cmd='clear && cd %s && ./gradlew bootRun'", root_dir))
 end, vim.tbl_extend("force", opts, { desc = "Java: Gradle bootRun" }))
 
+-- Spring Boot helpers
+map("n", "<leader>cR", function()
+  local dir = vim.fn.fnameescape(root_dir)
+  vim.cmd(string.format("TermExec cmd='pkill -f bootRun; sleep 1 && cd %s && ./gradlew bootRun'", dir))
+end, vim.tbl_extend("force", opts, { desc = "Java: Restart Spring Boot" }))
+
+map("n", "<leader>cL", function()
+  local dir = vim.fn.fnameescape(root_dir)
+  vim.cmd(string.format("TermExec cmd='tail -f %s/build/logs/spring.log'", dir))
+end, vim.tbl_extend("force", opts, { desc = "Java: Tail Spring logs" }))
+
 map("n", "<leader>cb", function()
   vim.cmd(string.format("TermExec cmd='clear && cd %s && ./gradlew build'", root_dir))
 end, vim.tbl_extend("force", opts, { desc = "Java: Gradle build" }))
@@ -104,5 +131,13 @@ vim.api.nvim_create_autocmd("LspAttach", {
     map("n", "<leader>rn", vim.lsp.buf.rename, { buffer = bufnr, desc = "LSP: Rename" })
     map("n", "<leader>ca", vim.lsp.buf.code_action, { buffer = bufnr, desc = "LSP: Code Action" })
     map("n", "<leader>ci", require("jdtls").organize_imports, { buffer = bufnr, desc = "Java: Organize Imports" })
+
+    -- Organize imports automatically before save
+    vim.api.nvim_create_autocmd("BufWritePre", {
+      buffer = bufnr,
+      callback = function()
+        require("jdtls").organize_imports()
+      end,
+    })
   end,
 })

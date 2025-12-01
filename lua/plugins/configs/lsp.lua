@@ -75,12 +75,12 @@ setup_lsp("gopls", {
   },
 })
 
--- TypeScript/JavaScript
-setup_lsp("ts_ls", {
-  cmd = { "typescript-language-server", "--stdio" },
-  filetypes = { "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx" },
-  root_markers = { "tsconfig.json", "jsconfig.json", "package.json", ".git" },
-})
+-- TypeScript/JavaScript - Handled by typescript-tools.nvim in lazy_setup.lua
+-- setup_lsp("ts_ls", {
+--   cmd = { "typescript-language-server", "--stdio" },
+--   filetypes = { "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx" },
+--   root_markers = { "tsconfig.json", "jsconfig.json", "package.json", ".git" },
+-- })
 
 -- Lua
 setup_lsp("lua_ls", {

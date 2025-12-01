@@ -21,6 +21,10 @@ o.mouse = mouse_enabled and "a" or ""
 -- System clipboard
 o.clipboard = "unnamedplus"
 
+-- Auto-write buffers without confirmation prompts
+o.confirm = false
+o.autowriteall = true
+
 local undodir = vim.fn.stdpath("cache") .. "/undo"
 vim.fn.mkdir(undodir, "p")
 o.undodir = undodir

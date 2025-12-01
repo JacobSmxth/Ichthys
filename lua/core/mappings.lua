@@ -27,6 +27,11 @@ map("n", "<leader>/", ":Telescope current_buffer_fuzzy_find<CR>", { noremap = tr
 map("n", "n", "nzzzv", opts)
 map("n", "N", "Nzzzv", opts)
 
+-- Quick recent files (project scoped)
+map("n", "<leader>o", function()
+  require("telescope.builtin").oldfiles({ only_cwd = true })
+end, { noremap = true, silent = true, desc = "Recent project files" })
+
 -- Telescope finder mappings
 map("n", "<leader>ff", ":Telescope find_files<CR>", { noremap = true, silent = true, desc = "Find files" })
 map("n", "<leader>fg", ":Telescope live_grep<CR>", { noremap = true, silent = true, desc = "Live grep" })
@@ -190,17 +195,43 @@ map("n", "<leader>fm", function()
   end
 
   local man_pages = {}
-  local handle = io.popen("man -k . 2>/dev/null | awk '{print $1}' | sort -u")
 
-  if not handle then
+  -- Use async job instead of blocking io.popen
+  local job_complete = false
+  local job_id = vim.fn.jobstart("man -k . 2>/dev/null | awk '{print $1}' | sort -u", {
+    stdout_buffered = true,
+    on_stdout = function(_, data)
+      if data then
+        for _, page in ipairs(data) do
+          if page and page ~= "" then
+            table.insert(man_pages, page)
+          end
+        end
+      end
+    end,
+    on_exit = function()
+      job_complete = true
+    end,
+  })
+
+  if job_id <= 0 then
     vim.notify("Failed to get man pages", vim.log.levels.ERROR)
     return
   end
 
-  for page in handle:lines() do
-    table.insert(man_pages, page)
+  -- Wait for job with timeout (max 3 seconds)
+  local timeout = 3000
+  local waited = 0
+  while not job_complete and waited < timeout do
+    vim.wait(50)
+    waited = waited + 50
   end
-  handle:close()
+
+  if not job_complete then
+    vim.fn.jobstop(job_id)
+    vim.notify("Man page search timed out", vim.log.levels.WARN)
+    return
+  end
 
   if #man_pages == 0 then
     vim.notify("No man pages found", vim.log.levels.WARN)
@@ -288,5 +319,112 @@ map("n", "<leader>d", function()
   require("plugins.configs.dev-dash").open_dashboard()
 end, { noremap = true, silent = true, desc = "Open Dev Dashboard" })
 
+-- Dadbod: select connection
+map("n", "<leader>Dc", function()
+  local dbs = require("core.databases")
+  local names = vim.tbl_keys(dbs.connections)
+  table.sort(names)
+  vim.ui.select(names, { prompt = "Select database:" }, function(choice)
+    if choice then
+      dbs.connect(choice)
+    end
+  end)
+end, { noremap = true, silent = true, desc = "Connect to database" })
+
+-- Quickfix / location list navigation
+map("n", "]q", "<cmd>cnext<cr>zz", { noremap = true, silent = true, desc = "Next quickfix" })
+map("n", "[q", "<cmd>cprev<cr>zz", { noremap = true, silent = true, desc = "Prev quickfix" })
+map("n", "]Q", "<cmd>clast<cr>zz", { noremap = true, silent = true, desc = "Last quickfix" })
+map("n", "[Q", "<cmd>cfirst<cr>zz", { noremap = true, silent = true, desc = "First quickfix" })
+map("n", "]l", "<cmd>lnext<cr>zz", { noremap = true, silent = true, desc = "Next location list" })
+map("n", "[l", "<cmd>lprev<cr>zz", { noremap = true, silent = true, desc = "Prev location list" })
+
+-- Smart yanks for file info
+map("n", "<leader>yf", '<cmd>let @+ = expand("%")<cr>', { noremap = true, silent = true, desc = "Yank file path" })
+map("n", "<leader>yF", '<cmd>let @+ = expand("%:p")<cr>', { noremap = true, silent = true, desc = "Yank full path" })
+map("n", "<leader>yn", '<cmd>let @+ = expand("%:t")<cr>', { noremap = true, silent = true, desc = "Yank file name" })
+map("n", "<leader>yl", function()
+  local line = vim.fn.expand("%") .. ":" .. vim.fn.line(".")
+  vim.fn.setreg("+", line)
+  vim.notify("Yanked: " .. line, vim.log.levels.INFO)
+end, { noremap = true, silent = true, desc = "Yank file:line" })
+
+-- Visual * search
+map("v", "*", function()
+  local saved = vim.fn.getreg("z")
+  vim.cmd('normal! "zy')
+  local pattern = vim.fn.escape(vim.fn.getreg("z"), "\\[]^$.*")
+  vim.fn.setreg("/", "\\V" .. pattern)
+  vim.cmd("normal! n")
+  vim.fn.setreg("z", saved)
+end, { noremap = true, silent = true, desc = "Search visual selection" })
+
+-- Scratch buffers
+map("n", "<leader>ns", function()
+  vim.cmd("enew")
+  vim.bo.buftype = "nofile"
+  vim.bo.bufhidden = "hide"
+  vim.bo.swapfile = false
+end, { noremap = true, silent = true, desc = "New scratch buffer" })
+
+map("n", "<leader>nS", function()
+  vim.ui.select({ "sql", "java", "json", "markdown", "lua" }, { prompt = "Filetype:" }, function(ft)
+    if ft then
+      vim.cmd("enew")
+      vim.bo.buftype = "nofile"
+      vim.bo.bufhidden = "hide"
+      vim.bo.swapfile = false
+      vim.bo.filetype = ft
+    end
+  end)
+end, { noremap = true, silent = true, desc = "New scratch with filetype" })
+
+-- Project command memory (per cwd)
+local last_cmd = {}
+map("n", "<leader>c.", function()
+  local cwd = vim.fn.getcwd()
+  if last_cmd[cwd] then
+    vim.cmd("TermExec cmd='" .. last_cmd[cwd] .. "'")
+  else
+    vim.ui.input({ prompt = "Command: " }, function(cmd)
+      if cmd and cmd ~= "" then
+        last_cmd[cwd] = cmd
+        vim.cmd("TermExec cmd='" .. cmd .. "'")
+      end
+    end)
+  end
+end, { noremap = true, silent = true, desc = "Run/set project command" })
+
+-- Toggle between Java impl/test files
+map("n", "<leader>to", function()
+  local file = vim.fn.expand("%:t")
+  local dir = vim.fn.expand("%:p:h")
+
+  if file:match("Test%.java$") then
+    local impl = file:gsub("Test%.java$", ".java")
+    local impl_path = dir .. "/" .. impl
+    if vim.loop.fs_stat(impl_path) then
+      vim.cmd("edit " .. vim.fn.fnameescape(impl_path))
+    else
+      local ok = pcall(vim.cmd, "find " .. vim.fn.fnameescape(impl))
+      if not ok then
+        vim.notify("Impl not found: " .. impl, vim.log.levels.WARN)
+      end
+    end
+  elseif file:match("%.java$") then
+    local test = file:gsub("%.java$", "Test.java")
+    local test_path = dir .. "/" .. test
+    if vim.loop.fs_stat(test_path) then
+      vim.cmd("edit " .. vim.fn.fnameescape(test_path))
+    else
+      local ok = pcall(vim.cmd, "find " .. vim.fn.fnameescape(test))
+      if not ok then
+        vim.notify("Test not found: " .. test, vim.log.levels.WARN)
+      end
+    end
+  else
+    vim.notify("Not a Java file", vim.log.levels.WARN)
+  end
+end, { noremap = true, silent = true, desc = "Toggle test/implementation" })
 -- Note: For full reload, restart nvim or use :Lazy reload <plugin>
 -- This mapping has been removed - just restart nvim for config changes
