@@ -4,7 +4,7 @@ require("lazy").setup({
   -- Colorscheme
   {
     "sainnhe/gruvbox-material",
-    priority = 1000,
+    lazy = false,
   },
 
   -- Dashboard
@@ -75,11 +75,6 @@ require("lazy").setup({
   },
 
   {
-    "williamboman/mason-lspconfig.nvim",
-    dependencies = { "williamboman/mason.nvim" },
-  },
-
-  {
     "WhoIsSethDaniel/mason-tool-installer.nvim",
     dependencies = { "williamboman/mason.nvim" },
     config = function()
@@ -134,7 +129,6 @@ require("lazy").setup({
     "neovim/nvim-lspconfig",
     dependencies = {
       "williamboman/mason.nvim",
-      "williamboman/mason-lspconfig.nvim",
     },
     config = function()
       require("plugins.configs.lsp")
@@ -306,12 +300,18 @@ require("lazy").setup({
   -- Treesitter
   {
     "nvim-treesitter/nvim-treesitter",
-    branch = "main",
+    branch = "master",
     build = ":TSUpdate",
     event = { "BufReadPost", "BufNewFile" },
     config = function()
       require("plugins.configs.treesitter")
     end,
+  },
+
+  {
+    "nvim-treesitter/nvim-treesitter-textobjects",
+    branch = "master",
+    dependencies = { "nvim-treesitter/nvim-treesitter" },
   },
 
   -- Telescope
@@ -321,6 +321,7 @@ require("lazy").setup({
     dependencies = {
       "nvim-lua/plenary.nvim",
       "nvim-telescope/telescope-fzf-native.nvim",
+      "nvim-treesitter/nvim-treesitter",
     },
     config = function()
       require("plugins.configs.telescope")
@@ -399,6 +400,7 @@ require("lazy").setup({
 
   {
     "nvim-lua/plenary.nvim",
+    lazy = true,
   },
 
   -- Oil.nvim (file explorer as a buffer)
@@ -690,6 +692,7 @@ require("lazy").setup({
 
   {
     "echasnovski/mini.icons",
+    lazy = true,
     config = function()
       require("mini.icons").setup()
     end,
@@ -858,6 +861,18 @@ require("lazy").setup({
     },
     config = function()
       require("noice").setup({
+        -- Add error handling for rendering issues
+        views = {
+          cmdline_popup = {
+            border = {
+              style = "rounded",
+            },
+            filter_options = {},
+            win_options = {
+              winhighlight = "NormalFloat:NormalFloat,FloatBorder:FloatBorder",
+            },
+          },
+        },
         lsp = {
           override = {
             ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
@@ -1560,8 +1575,8 @@ require("lazy").setup({
     cmd = "GrugFar",
     keys = {
       { "<leader>sr", "<cmd>GrugFar<cr>", desc = "Find and Replace" },
-      { "<leader>sw", function() require("grug-far").grug_far({ prefills = { search = vim.fn.expand("<cword>") } }) end, desc = "Find and Replace (word)" },
-      { "<leader>sr", function() require("grug-far").with_visual_selection({ prefills = { paths = vim.fn.expand("%") } }) end, mode = "v", desc = "Find and Replace (selection)" },
+      { "<leader>sw", function() require("grug-far").open({ prefills = { search = vim.fn.expand("<cword>") } }) end, desc = "Find and Replace (word)" },
+      { "<leader>sv", function() require("grug-far").with_visual_selection({ prefills = { paths = vim.fn.expand("%") } }) end, mode = "v", desc = "Find and Replace (selection)" },
     },
     config = function()
       require("grug-far").setup({

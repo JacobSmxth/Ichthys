@@ -131,13 +131,5 @@ vim.api.nvim_create_autocmd("LspAttach", {
     map("n", "<leader>rn", vim.lsp.buf.rename, { buffer = bufnr, desc = "LSP: Rename" })
     map("n", "<leader>ca", vim.lsp.buf.code_action, { buffer = bufnr, desc = "LSP: Code Action" })
     map("n", "<leader>ci", require("jdtls").organize_imports, { buffer = bufnr, desc = "Java: Organize Imports" })
-
-    -- Organize imports automatically before save
-    vim.api.nvim_create_autocmd("BufWritePre", {
-      buffer = bufnr,
-      callback = function()
-        require("jdtls").organize_imports()
-      end,
-    })
   end,
 })

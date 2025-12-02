@@ -428,3 +428,7 @@ map("n", "<leader>to", function()
 end, { noremap = true, silent = true, desc = "Toggle test/implementation" })
 -- Note: For full reload, restart nvim or use :Lazy reload <plugin>
 -- This mapping has been removed - just restart nvim for config changes
+
+-- View messages and notifications
+map("n", "<leader>fM", ":messages<CR>", { noremap = true, silent = true, desc = "View messages" })
+map("n", "<leader>fn", ":Telescope notify<CR>", { noremap = true, silent = true, desc = "View notifications" })

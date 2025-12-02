@@ -43,12 +43,10 @@ require("toggleterm").setup({
   -- Floating terminal configuration
   float_opts = {
     border = "curved",
-    width = function()
-      return math.floor(vim.o.columns * 0.9)
-    end,
-    height = function()
-      return math.floor(vim.o.lines * 0.9)
-    end,
+    width = function() return math.floor(vim.o.columns * 0.45) end,
+    height = function() return math.floor(vim.o.lines * 0.7) end,
+    row = function() return math.floor(vim.o.lines * 0.15) end,
+    col = function() return vim.o.columns - math.floor(vim.o.columns * 0.47) end,
     winblend = 0,
   },
 })

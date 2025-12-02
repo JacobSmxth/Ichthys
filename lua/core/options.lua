@@ -75,6 +75,9 @@ o.swapfile = false
 -- Allow hiding modified buffers
 o.hidden = true
 
+-- Allow project-local configuration via .nvim.lua or .exrc
+o.exrc = true
+
 -- Simple statusline
 o.statusline = "%#StatusLine# %{toupper(mode())} %#StatusLineNC#| %f %m %= %l:%c | %Y "
 o.laststatus = 2
