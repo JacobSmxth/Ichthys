@@ -264,6 +264,7 @@ require("lazy").setup({
       })
 
       ls.add_snippets("java", {
+        -- Basic snippets
         s("sout", {
           t("System.out.println("),
           i(1, '"message"'),
@@ -281,9 +282,132 @@ require("lazy").setup({
           i(2, "message"),
           t('");'),
         }),
+
+        -- Spring Boot Controller
+        s("controller", {
+          t({ "@RestController", '@RequestMapping("/api/' }),
+          i(1, "resource"),
+          t({ '")', "public class " }),
+          i(2, "Controller"),
+          t({ " {", "", "  @Autowired", "  private " }),
+          i(3, "Service"),
+          t({ " service;", "", "  " }),
+          i(0),
+          t({ "", "}" }),
+        }),
+
+        -- Spring Boot Service
+        s("service", {
+          t({ "@Service", "public class " }),
+          i(1, "Service"),
+          t({ " {", "", "  @Autowired", "  private " }),
+          i(2, "Repository"),
+          t({ " repository;", "", "  " }),
+          i(0),
+          t({ "", "}" }),
+        }),
+
+        -- Spring Boot Repository
+        s("repo", {
+          t({ "@Repository", "public interface " }),
+          i(1, "Repository"),
+          t(" extends JpaRepository<"),
+          i(2, "Entity"),
+          t(", "),
+          i(3, "Long"),
+          t({ "> {", "  " }),
+          i(0),
+          t({ "", "}" }),
+        }),
+
+        -- JPA Entity
+        s("entity", {
+          t({ "@Entity", '@Table(name = "' }),
+          i(1, "table_name"),
+          t({ '")', "public class " }),
+          i(2, "Entity"),
+          t({ " {", "", "  @Id", "  @GeneratedValue(strategy = GenerationType.IDENTITY)", "  private Long id;", "", "  " }),
+          i(0),
+          t({ "", "}" }),
+        }),
+
+        -- REST Mappings
         s("@rest", t("@RestController")),
         s("@get", { t('@GetMapping("'), i(1, "/path"), t('")') }),
         s("@post", { t('@PostMapping("'), i(1, "/path"), t('")') }),
+        s("@put", { t('@PutMapping("'), i(1, "/path"), t('")') }),
+        s("@delete", { t('@DeleteMapping("'), i(1, "/path"), t('")') }),
+        s("@patch", { t('@PatchMapping("'), i(1, "/path"), t('")') }),
+
+        -- GetMapping method
+        s("@getmap", {
+          t({ '@GetMapping("' }),
+          i(1, "/{id}"),
+          t({ '")', "public ResponseEntity<" }),
+          i(2, "Type"),
+          t("> "),
+          i(3, "method"),
+          t("("),
+          i(4),
+          t({ ") {", "  " }),
+          i(0),
+          t({ "", "}" }),
+        }),
+
+        -- PostMapping method
+        s("@postmap", {
+          t({ "@PostMapping", "public ResponseEntity<" }),
+          i(1, "Type"),
+          t("> "),
+          i(2, "method"),
+          t("(@RequestBody "),
+          i(3, "Dto"),
+          t({ " dto) {", "  " }),
+          i(0),
+          t({ "", "}" }),
+        }),
+
+        -- PutMapping method
+        s("@putmap", {
+          t({ '@PutMapping("/{id}")', "public ResponseEntity<" }),
+          i(1, "Type"),
+          t("> "),
+          i(2, "update"),
+          t("(@PathVariable Long id, @RequestBody "),
+          i(3, "Dto"),
+          t({ " dto) {", "  " }),
+          i(0),
+          t({ "", "}" }),
+        }),
+
+        -- DeleteMapping method
+        s("@delmap", {
+          t({ '@DeleteMapping("/{id}")', "public ResponseEntity<Void> " }),
+          i(1, "delete"),
+          t({ "(@PathVariable Long id) {", "  " }),
+          i(0),
+          t({ "", "  return ResponseEntity.noContent().build();", "}" }),
+        }),
+
+        -- Spring annotations
+        s("@auto", t("@Autowired")),
+        s("@req", t("@RequestBody")),
+        s("@path", { t("@PathVariable "), i(1, "Long"), t(" "), i(2, "id") }),
+        s("@param", { t("@RequestParam "), i(1, "String"), t(" "), i(2, "param") }),
+        s("@valid", t("@Valid")),
+
+        -- Lombok
+        s("@data", t("@Data")),
+        s("@getter", t("@Getter")),
+        s("@setter", t("@Setter")),
+        s("@noargs", t("@NoArgsConstructor")),
+        s("@allargs", t("@AllArgsConstructor")),
+        s("@builder", t("@Builder")),
+        s("@slf4j", t("@Slf4j")),
+
+        -- Testing
+        s("@test", { t({ "@Test", "void " }), i(1, "testMethod"), t({ "() {", "  " }), i(0), t({ "", "}" }) }),
+        s("@boot", t("@SpringBootTest")),
       })
     end,
   },

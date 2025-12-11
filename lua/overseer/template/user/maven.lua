@@ -1,72 +1,49 @@
--- Maven task template for overseer.nvim
+-- Maven task template for Overseer
+
 return {
   name = "maven",
   builder = function()
-    local maven_wrapper = vim.fn.filereadable("mvnw") == 1 and "./mvnw" or "mvn"
+    local tasks = {
+      { name = "spring-boot:run", cmd = { "./mvnw", "spring-boot:run" } },
+      { name = "clean install", cmd = { "./mvnw", "clean", "install" } },
+      { name = "clean", cmd = { "./mvnw", "clean" } },
+      { name = "test", cmd = { "./mvnw", "test" } },
+      { name = "package", cmd = { "./mvnw", "package" } },
+      { name = "dependency:tree", cmd = { "./mvnw", "dependency:tree" } },
+      { name = "compile", cmd = { "./mvnw", "compile" } },
+    }
 
     return {
-      cmd = { maven_wrapper },
-      args = { "clean", "install" },
-      components = {
-        { "on_output_quickfix", open = true },
-        "default",
+      name = "Select Maven task",
+      params = {
+        task = {
+          type = "enum",
+          choices = vim.tbl_map(function(t)
+            return t.name
+          end, tasks),
+          default = "spring-boot:run",
+        },
       },
+      builder = function(params)
+        local selected = vim.tbl_filter(function(t)
+          return t.name == params.task
+        end, tasks)[1]
+
+        return {
+          cmd = selected.cmd,
+          components = {
+            { "on_output_quickfix", open = false },
+            "on_result_diagnostics",
+            "default",
+          },
+        }
+      end,
     }
   end,
   condition = {
-    filetype = { "java", "kotlin" },
+    filetype = { "java" },
     callback = function()
-      return vim.fn.filereadable("pom.xml") == 1
+      return vim.fn.filereadable("pom.xml") == 1 or vim.fn.filereadable("mvnw") == 1
     end,
   },
-  tags = { "build", "maven" },
-  desc = "Run Maven build tasks",
-  params = {
-    task = {
-      type = "enum",
-      name = "Maven Phase/Goal",
-      desc = "The Maven phase or goal to run",
-      choices = {
-        "clean",
-        "compile",
-        "test",
-        "package",
-        "verify",
-        "install",
-        "deploy",
-        "clean install",
-        "clean package",
-        "clean test",
-        "spring-boot:run",
-        "dependency:tree",
-        "versions:display-dependency-updates",
-      },
-      default = "clean install",
-    },
-    args = {
-      type = "string",
-      name = "Additional Arguments",
-      desc = "Additional Maven arguments (e.g., -DskipTests)",
-      optional = true,
-      default = "",
-    },
-  },
-  generator = function(params)
-    local maven_wrapper = vim.fn.filereadable("mvnw") == 1 and "./mvnw" or "mvn"
-    local task_args = vim.split(params.task, " ")
-
-    if params.args and params.args ~= "" then
-      vim.list_extend(task_args, vim.split(params.args, " "))
-    end
-
-    return {
-      cmd = maven_wrapper,
-      args = task_args,
-      components = {
-        { "on_output_quickfix", open = true },
-        "default",
-      },
-      name = string.format("mvn %s", params.task),
-    }
-  end,
 }

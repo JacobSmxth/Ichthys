@@ -54,16 +54,40 @@ local config = {
       maven = { downloadSources = true },
       signatureHelp = { enabled = true },
       contentProvider = { preferred = "fernflower" },
+      completion = {
+        favoriteStaticMembers = {
+          "org.junit.jupiter.api.Assertions.*",
+          "org.mockito.Mockito.*",
+          "org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*",
+          "org.springframework.test.web.servlet.result.MockMvcResultMatchers.*",
+          "org.springframework.boot.test.context.SpringBootTest.*",
+        },
+      },
+      sources = {
+        organizeImports = {
+          starThreshold = 5,
+          staticStarThreshold = 3,
+        },
+      },
+      codeGeneration = {
+        toString = {
+          template = "${object.className}{${member.name()}=${member.value}, ${otherMembers}}",
+        },
+        useBlocks = true,
+      },
     },
   },
   init_options = {
-    bundles = {
-      -- Spring Boot Tools (optional, enhances Spring Boot support)
-      -- Download from: https://github.com/spring-projects/sts4/releases
-      -- Extract and place jars in ~/.local/share/nvim/spring-boot-tools/
-      -- Provides: @Bean navigation, application.properties completion, Spring code actions
-      vim.fn.glob(vim.fn.stdpath("data") .. "/spring-boot-tools/*.jar", true),
-    },
+    bundles = vim.list_extend(
+      vim.list_extend(
+        -- Spring Boot Tools (enhances Spring Boot support)
+        vim.split(vim.fn.glob(vim.fn.stdpath("data") .. "/spring-boot-tools/*.jar", true), "\n"),
+        -- Java Debug Adapter (enables debugging with DAP)
+        vim.split(vim.fn.glob(vim.fn.stdpath("data") .. "/mason/packages/java-debug-adapter/extension/server/*.jar", true), "\n")
+      ),
+      -- Java Test Runner (run tests with code lens)
+      vim.split(vim.fn.glob(vim.fn.stdpath("data") .. "/mason/packages/java-test/extension/server/*.jar", true), "\n")
+    ),
   },
 }
 
@@ -85,8 +109,16 @@ map("n", "<leader>cr", function()
 end, vim.tbl_extend("force", opts, { desc = "Java: Compile and run" }))
 
 map("n", "<leader>cg", function()
-  vim.cmd(string.format("TermExec cmd='clear && cd %s && ./gradlew bootRun'", root_dir))
-end, vim.tbl_extend("force", opts, { desc = "Java: Gradle bootRun" }))
+  vim.ui.input({ prompt = "Spring Profile (leave empty for default): " }, function(profile)
+    local cmd
+    if profile and profile ~= "" then
+      cmd = string.format("SPRING_PROFILES_ACTIVE=%s ./gradlew bootRun", profile)
+    else
+      cmd = "./gradlew bootRun"
+    end
+    vim.cmd(string.format("TermExec cmd='clear && cd %s && %s'", root_dir, cmd))
+  end)
+end, vim.tbl_extend("force", opts, { desc = "Java: Gradle bootRun (with profile)" }))
 
 -- Spring Boot helpers
 map("n", "<leader>cR", function()
@@ -113,23 +145,84 @@ map("n", "<leader>cf", function()
   vim.cmd("e")
 end, vim.tbl_extend("force", opts, { desc = "Java: Format" }))
 
+-- Hot reload (Spring DevTools)
+map("n", "<leader>cH", function()
+  vim.cmd("silent !touch " .. vim.fn.expand("%:p"))
+  vim.notify("Triggered Spring DevTools hot reload", vim.log.levels.INFO)
+end, vim.tbl_extend("force", opts, { desc = "Java: Hot Reload (DevTools)" }))
+
+-- Navigate to application.properties/yml
+map("n", "<leader>cp", function()
+  local props = root_dir .. "/src/main/resources/application.properties"
+  local yml = root_dir .. "/src/main/resources/application.yml"
+  if vim.fn.filereadable(props) == 1 then
+    vim.cmd("edit " .. props)
+  elseif vim.fn.filereadable(yml) == 1 then
+    vim.cmd("edit " .. yml)
+  else
+    vim.notify("No application.properties or application.yml found", vim.log.levels.WARN)
+  end
+end, vim.tbl_extend("force", opts, { desc = "Java: Open application config" }))
+
+-- Show dependencies
+map("n", "<leader>cd", function()
+  local gradle = vim.fn.filereadable(root_dir .. "/gradlew") == 1
+  local maven = vim.fn.filereadable(root_dir .. "/mvnw") == 1
+  local cmd
+  if gradle then
+    cmd = "./gradlew dependencies"
+  elseif maven then
+    cmd = "./mvnw dependency:tree"
+  else
+    vim.notify("No Gradle or Maven wrapper found", vim.log.levels.ERROR)
+    return
+  end
+  vim.cmd(string.format("TermExec cmd='clear && cd %s && %s'", root_dir, cmd))
+end, vim.tbl_extend("force", opts, { desc = "Java: Show dependencies" }))
+
+-- Set up LSP keymaps immediately (will work once LSP attaches)
+map("n", "gd", vim.lsp.buf.definition, vim.tbl_extend("force", opts, { desc = "LSP: Go to Definition" }))
+map("n", "gr", vim.lsp.buf.references, vim.tbl_extend("force", opts, { desc = "LSP: References" }))
+map("n", "K", vim.lsp.buf.hover, vim.tbl_extend("force", opts, { desc = "LSP: Hover" }))
+map("n", "<leader>rn", vim.lsp.buf.rename, vim.tbl_extend("force", opts, { desc = "LSP: Rename" }))
+map("n", "<leader>ca", vim.lsp.buf.code_action, vim.tbl_extend("force", opts, { desc = "LSP: Code Action" }))
+map("n", "<leader>ci", require("jdtls").organize_imports, vim.tbl_extend("force", opts, { desc = "Java: Organize Imports" }))
+
+-- Code lens (shows "Run" / "Debug" above main methods and tests)
+map("n", "<leader>cl", vim.lsp.codelens.run, vim.tbl_extend("force", opts, { desc = "Java: Run Code Lens" }))
+
 jdtls.start_or_attach(config)
 
-vim.api.nvim_create_autocmd("LspAttach", {
+-- Enable code lens and set up auto-refresh
+vim.api.nvim_create_autocmd({ "BufEnter", "CursorHold", "InsertLeave" }, {
   buffer = 0,
-  callback = function(args)
-    local bufnr = args.buf
-    local client = vim.lsp.get_client_by_id(args.data.client_id)
-
-    if client.name ~= "jdtls" then
-      return
-    end
-
-    map("n", "gd", vim.lsp.buf.definition, { buffer = bufnr, desc = "LSP: Go to Definition" })
-    map("n", "gr", vim.lsp.buf.references, { buffer = bufnr, desc = "LSP: References" })
-    map("n", "K", vim.lsp.buf.hover, { buffer = bufnr, desc = "LSP: Hover" })
-    map("n", "<leader>rn", vim.lsp.buf.rename, { buffer = bufnr, desc = "LSP: Rename" })
-    map("n", "<leader>ca", vim.lsp.buf.code_action, { buffer = bufnr, desc = "LSP: Code Action" })
-    map("n", "<leader>ci", require("jdtls").organize_imports, { buffer = bufnr, desc = "Java: Organize Imports" })
+  callback = function()
+    pcall(vim.lsp.codelens.refresh)
   end,
 })
+
+-- DAP configuration for Java debugging
+local function setup_dap()
+  local ok_dap, dap = pcall(require, "dap")
+  if not ok_dap then
+    return
+  end
+
+  dap.configurations.java = {
+    {
+      type = "java",
+      request = "attach",
+      name = "Debug (Attach) - Remote",
+      hostName = "127.0.0.1",
+      port = 5005,
+    },
+    {
+      type = "java",
+      request = "launch",
+      name = "Debug (Launch) - Current File",
+    },
+  }
+end
+
+-- Set up DAP after a short delay to ensure jdtls is ready
+vim.defer_fn(setup_dap, 200)

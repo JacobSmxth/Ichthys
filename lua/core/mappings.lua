@@ -35,6 +35,14 @@ end, { noremap = true, silent = true, desc = "Recent project files" })
 -- Telescope finder mappings
 map("n", "<leader>ff", ":Telescope find_files<CR>", { noremap = true, silent = true, desc = "Find files" })
 map("n", "<leader>fg", ":Telescope live_grep<CR>", { noremap = true, silent = true, desc = "Live grep" })
+map("n", "<leader>fG", function()
+  require("telescope.builtin").live_grep({
+    prompt_title = "Regex Search (entire codebase)",
+    additional_args = function(opts)
+      return { "--hidden", "--pcre2" }
+    end,
+  })
+end, { noremap = true, silent = true, desc = "Regex grep" })
 map("n", "<leader>fb", ":Telescope buffers<CR>", { noremap = true, silent = true, desc = "Find buffers" })
 map("n", "<leader>fh", ":Telescope help_tags<CR>", { noremap = true, silent = true, desc = "Find help" })
 map("n", "<leader>fk", ":Telescope keymaps<CR>", { noremap = true, silent = true, desc = "Find keymaps" })
