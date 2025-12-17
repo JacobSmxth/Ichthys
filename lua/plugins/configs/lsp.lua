@@ -45,36 +45,6 @@ setup_lsp("clangd", {
   root_markers = { ".clangd", ".clang-tidy", ".clang-format", "compile_commands.json", "compile_flags.txt", "configure.ac", ".git" },
 })
 
--- C# (OmniSharp)
-setup_lsp("omnisharp", {
-  cmd = { "omnisharp" },
-  filetypes = { "cs" },
-  root_markers = { "*.sln", "*.csproj", "omnisharp.json", "function.json", ".git" },
-})
-
--- Python (Pyright)
-setup_lsp("pyright", {
-  cmd = { "pyright-langserver", "--stdio" },
-  filetypes = { "python" },
-  root_markers = { "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", "Pipfile", "pyrightconfig.json", ".git" },
-})
-
--- Go (Gopls)
-setup_lsp("gopls", {
-  cmd = { "gopls" },
-  filetypes = { "go", "gomod", "gowork", "gotmpl" },
-  root_markers = { "go.work", "go.mod", ".git" },
-  settings = {
-    gopls = {
-      analyses = {
-        unusedparams = true,
-      },
-      staticcheck = true,
-      gofumpt = true,
-    },
-  },
-})
-
 -- TypeScript/JavaScript - Handled by typescript-tools.nvim in lazy_setup.lua
 -- setup_lsp("ts_ls", {
 --   cmd = { "typescript-language-server", "--stdio" },

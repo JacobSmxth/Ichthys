@@ -11,17 +11,17 @@ configs.setup({
   -- Install parsers for these languages
   ensure_installed = {
     "c",
-    "go",
-    "python",
     "javascript",
     "typescript",
     "java",
-    "rust",
     "lua",
     "vim",
     "vimdoc",
     "markdown",
     "bash",
+    "html",
+    "css",
+    "scss",
   },
 
   -- Install parsers synchronously (only applied to `ensure_installed`)

@@ -83,9 +83,6 @@ require("lazy").setup({
           -- LSP Servers
           "jdtls",                      -- Java
           "clangd",                     -- C/C++
-          "omnisharp",                  -- C#
-          "gopls",                      -- Go
-          "pyright",                    -- Python
           "typescript-language-server", -- TypeScript/JavaScript
           "html-lsp",                   -- HTML
           "css-lsp",                    -- CSS/SCSS
@@ -96,17 +93,11 @@ require("lazy").setup({
           -- Formatters
           "google-java-format",         -- Java
           "clang-format",               -- C/C++
-          "csharpier",                  -- C#
-          "gofumpt",                    -- Go
-          "goimports",                  -- Go
-          "black",                      -- Python
-          "isort",                      -- Python
           "prettier",                   -- JS/TS/HTML/CSS/SCSS
           "eslint_d",                   -- JS/TS linting
           "stylua",                     -- Lua
 
           -- Linters
-          "ruff",                       -- Python
           "shellcheck",                 -- Bash/Zsh
           "markdownlint",               -- Markdown
 
@@ -114,9 +105,6 @@ require("lazy").setup({
           "java-debug-adapter",         -- Java
           "java-test",                  -- Java testing
           "codelldb",                   -- C/C++
-          "netcoredbg",                 -- C#
-          "delve",                      -- Go
-          "debugpy",                    -- Python
           "js-debug-adapter",           -- JavaScript/TypeScript
         },
         auto_update = false,
@@ -172,9 +160,6 @@ require("lazy").setup({
           java = { "google-java-format" },
           c = { "clang-format" },
           cpp = { "clang-format" },
-          cs = { "csharpier" },
-          go = { "goimports", "gofumpt" },
-          python = { "isort", "black" },
           javascript = { "prettier", "eslint_d" },
           typescript = { "prettier", "eslint_d" },
           javascriptreact = { "prettier", "eslint_d" },
@@ -1210,8 +1195,6 @@ require("lazy").setup({
       "rcarriga/nvim-dap-ui",
       "nvim-neotest/nvim-nio",
       "theHamsta/nvim-dap-virtual-text",
-      "leoluz/nvim-dap-go",
-      "mfussenegger/nvim-dap-python",
     },
     keys = {
       { "<leader>db", "<cmd>lua require('dap').toggle_breakpoint()<cr>", desc = "Toggle Breakpoint" },
@@ -1246,12 +1229,6 @@ require("lazy").setup({
 
       require("nvim-dap-virtual-text").setup()
 
-      -- Go debugging
-      require("dap-go").setup()
-
-      -- Python debugging
-      require("dap-python").setup(vim.fn.stdpath("data") .. "/mason/packages/debugpy/venv/bin/python")
-
       -- C/C++ debugging (codelldb)
       dap.adapters.codelldb = {
         type = "server",
@@ -1276,24 +1253,6 @@ require("lazy").setup({
       }
 
       dap.configurations.cpp = dap.configurations.c
-
-      -- C# debugging (netcoredbg)
-      dap.adapters.coreclr = {
-        type = "executable",
-        command = vim.fn.stdpath("data") .. "/mason/bin/netcoredbg",
-        args = { "--interpreter=vscode" },
-      }
-
-      dap.configurations.cs = {
-        {
-          type = "coreclr",
-          name = "launch - netcoredbg",
-          request = "launch",
-          program = function()
-            return vim.fn.input("Path to dll: ", vim.fn.getcwd() .. "/bin/Debug/", "file")
-          end,
-        },
-      }
 
       -- JavaScript/TypeScript debugging (handled by vscode-js-debug in ftplugin)
       dap.adapters["pwa-node"] = {
@@ -1335,17 +1294,6 @@ require("lazy").setup({
   {
     "theHamsta/nvim-dap-virtual-text",
     dependencies = { "mfussenegger/nvim-dap" },
-  },
-
-  {
-    "leoluz/nvim-dap-go",
-    dependencies = { "mfussenegger/nvim-dap" },
-  },
-
-  {
-    "mfussenegger/nvim-dap-python",
-    dependencies = { "mfussenegger/nvim-dap" },
-    ft = "python",
   },
 
   -- Refactoring tools
@@ -1621,8 +1569,6 @@ require("lazy").setup({
     dependencies = {
       "nvim-lua/plenary.nvim",
       "nvim-treesitter/nvim-treesitter",
-      "nvim-neotest/neotest-python",
-      "nvim-neotest/neotest-go",
       "rcasia/neotest-java",
       "nvim-neotest/neotest-jest",
     },
@@ -1636,11 +1582,6 @@ require("lazy").setup({
     config = function()
       require("neotest").setup({
         adapters = {
-          require("neotest-python")({
-            dap = { justMyCode = false },
-            runner = "pytest",
-          }),
-          require("neotest-go"),
           require("neotest-java"),
           require("neotest-jest")({
             jestCommand = "npm test --",
@@ -1671,16 +1612,6 @@ require("lazy").setup({
         },
       })
     end,
-  },
-
-  {
-    "nvim-neotest/neotest-python",
-    dependencies = { "nvim-neotest/neotest" },
-  },
-
-  {
-    "nvim-neotest/neotest-go",
-    dependencies = { "nvim-neotest/neotest" },
   },
 
   {

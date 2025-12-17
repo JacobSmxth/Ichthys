@@ -78,16 +78,26 @@ local config = {
     },
   },
   init_options = {
-    bundles = vim.list_extend(
-      vim.list_extend(
-        -- Spring Boot Tools (enhances Spring Boot support)
-        vim.split(vim.fn.glob(vim.fn.stdpath("data") .. "/spring-boot-tools/*.jar", true), "\n"),
-        -- Java Debug Adapter (enables debugging with DAP)
-        vim.split(vim.fn.glob(vim.fn.stdpath("data") .. "/mason/packages/java-debug-adapter/extension/server/*.jar", true), "\n")
-      ),
-      -- Java Test Runner (run tests with code lens)
-      vim.split(vim.fn.glob(vim.fn.stdpath("data") .. "/mason/packages/java-test/extension/server/*.jar", true), "\n")
-    ),
+    bundles = (function()
+      local bundles = {}
+
+      -- Spring Boot Tools (enhances Spring Boot support including JPA)
+      local spring_boot_jars = vim.split(vim.fn.glob(vim.fn.stdpath("data") .. "/spring-boot-tools/*.jar", true), "\n")
+      vim.list_extend(bundles, vim.tbl_filter(function(jar) return jar ~= "" end, spring_boot_jars))
+
+      -- Java Debug Adapter
+      local debug_jars = vim.split(vim.fn.glob(vim.fn.stdpath("data") .. "/mason/packages/java-debug-adapter/extension/server/*.jar", true), "\n")
+      vim.list_extend(bundles, vim.tbl_filter(function(jar) return jar ~= "" end, debug_jars))
+
+      -- Java Test Runner
+      local test_jars = vim.split(vim.fn.glob(vim.fn.stdpath("data") .. "/mason/packages/java-test/extension/server/*.jar", true), "\n")
+      vim.list_extend(bundles, vim.tbl_filter(function(jar) return jar ~= "" end, test_jars))
+
+      -- Debug: print bundle count
+      vim.notify(string.format("Loaded %d jdtls extension bundles", #bundles), vim.log.levels.INFO)
+
+      return bundles
+    end)(),
   },
 }
 
