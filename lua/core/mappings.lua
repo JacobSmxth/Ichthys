@@ -31,6 +31,9 @@ map("n", "N", "Nzzzv", opts)
 map("n", "<leader>o", function()
   require("telescope.builtin").oldfiles({ only_cwd = true })
 end, { noremap = true, silent = true, desc = "Recent project files" })
+map("n", "<leader>fo", function()
+  require("telescope.builtin").oldfiles({ only_cwd = true })
+end, { noremap = true, silent = true, desc = "Recent project files" })
 
 -- Telescope finder mappings
 map("n", "<leader>ff", ":Telescope find_files<CR>", { noremap = true, silent = true, desc = "Find files" })
@@ -90,106 +93,6 @@ map("n", "<leader>fD", function()
     end,
   }):find()
 end, { noremap = true, silent = true, desc = "Find directories" })
-map("n", "<leader>fs", ":AutoSession search<CR>", { noremap = true, silent = true, desc = "Find sessions" })
-map("n", "<leader>fd", function()
-  local ok_pickers, pickers = pcall(require, "telescope.pickers")
-  local ok_finders, finders = pcall(require, "telescope.finders")
-  local ok_conf, conf = pcall(require, "telescope.config")
-  local ok_actions, actions = pcall(require, "telescope.actions")
-  local ok_action_state, action_state = pcall(require, "telescope.actions.state")
-
-  if not (ok_pickers and ok_finders and ok_conf and ok_actions and ok_action_state) then
-    vim.notify("Telescope not available", vim.log.levels.ERROR)
-    return
-  end
-
-  -- Function to get current sessions from filesystem
-  local function get_sessions()
-    local sessions = vim.fn.glob(vim.fn.stdpath("data") .. "/sessions/*.vim", false, true)
-    local session_names = {}
-
-    for _, session_path in ipairs(sessions) do
-      local name = vim.fn.fnamemodify(session_path, ":t:r")
-      -- Decode the session name (auto-session uses URL encoding)
-      name = name:gsub("%%(%x%x)", function(hex)
-        return string.char(tonumber(hex, 16))
-      end)
-      table.insert(session_names, { name = name, path = session_path })
-    end
-
-    return session_names
-  end
-
-  local session_names = get_sessions()
-
-  if #session_names == 0 then
-    vim.notify("No sessions found", vim.log.levels.WARN)
-    return
-  end
-
-  local function delete_session(prompt_bufnr)
-    local selection = action_state.get_selected_entry()
-    if not selection then return end
-
-    local ok = os.remove(selection.value.path)
-    if ok then
-      vim.notify("Deleted: " .. selection.value.name, vim.log.levels.INFO)
-
-      -- Re-scan filesystem for remaining sessions
-      local remaining_sessions = get_sessions()
-
-      -- If no sessions left, close the picker
-      if #remaining_sessions == 0 then
-        vim.notify("All sessions deleted", vim.log.levels.INFO)
-        actions.close(prompt_bufnr)
-        return
-      end
-
-      -- Refresh the picker with current filesystem state
-      local current_picker = action_state.get_current_picker(prompt_bufnr)
-      current_picker:refresh(finders.new_table({
-        results = remaining_sessions,
-        entry_maker = function(entry)
-          return {
-            value = entry,
-            display = entry.name,
-            ordinal = entry.name,
-          }
-        end,
-      }), { reset_prompt = false })
-    else
-      vim.notify("Failed to delete session", vim.log.levels.ERROR)
-    end
-  end
-
-  pickers.new({}, {
-    prompt_title = "Delete Session (Enter to delete, Esc to cancel)",
-    finder = finders.new_table({
-      results = session_names,
-      entry_maker = function(entry)
-        return {
-          value = entry,
-          display = entry.name,
-          ordinal = entry.name,
-        }
-      end,
-    }),
-    sorter = conf.values.generic_sorter({}),
-    attach_mappings = function(prompt_bufnr, map)
-      -- Enter deletes the selected session
-      actions.select_default:replace(function()
-        delete_session(prompt_bufnr)
-      end)
-
-      -- dd also deletes (like harpoon)
-      map("n", "dd", function()
-        delete_session(prompt_bufnr)
-      end)
-
-      return true
-    end,
-  }):find()
-end, { noremap = true, silent = true, desc = "Delete session" })
 map("n", "<leader>fm", function()
   local ok_pickers, pickers = pcall(require, "telescope.pickers")
   local ok_finders, finders = pcall(require, "telescope.finders")
@@ -297,21 +200,6 @@ map("n", "<A-k>", ":m .-2<CR>==", opts)
 map("v", "<A-j>", ":m '>+1<CR>gv=gv", opts)
 map("v", "<A-k>", ":m '<-2<CR>gv=gv", opts)
 
-map("n", "git", "vito<Esc>", { noremap = true, silent = true, desc = "Go inner tag" })
-map("n", "gi\"", "vi\"o<Esc>", { noremap = true, silent = true, desc = "Go inner \"" })
-map("n", "gi'", "vi'o<Esc>", { noremap = true, silent = true, desc = "Go inner '" })
-map("n", "gi`", "vi`o<Esc>", { noremap = true, silent = true, desc = "Go inner `" })
-map("n", "gi(", "vi(o<Esc>", { noremap = true, silent = true, desc = "Go inner (" })
-map("n", "gi)", "vi)o<Esc>", { noremap = true, silent = true, desc = "Go inner )" })
-map("n", "gib", "vibo<Esc>", { noremap = true, silent = true, desc = "Go inner ()" })
-map("n", "gi{", "vi{o<Esc>", { noremap = true, silent = true, desc = "Go inner {" })
-map("n", "gi}", "vi}o<Esc>", { noremap = true, silent = true, desc = "Go inner }" })
-map("n", "giB", "viBo<Esc>", { noremap = true, silent = true, desc = "Go inner {}" })
-map("n", "gi[", "vi[o<Esc>", { noremap = true, silent = true, desc = "Go inner [" })
-map("n", "gi]", "vi]o<Esc>", { noremap = true, silent = true, desc = "Go inner ]" })
-map("n", "gi<", "vi<o<Esc>", { noremap = true, silent = true, desc = "Go inner <" })
-map("n", "gi>", "vi>o<Esc>", { noremap = true, silent = true, desc = "Go inner >" })
-
 -- Claude AI mappings
 map("v", "<leader>ce", ":'<,'>Explain<CR>", { noremap = true, silent = true, desc = "Claude: Explain code" })
 map("n", "<leader>cq", function()
@@ -326,18 +214,6 @@ end, { noremap = true, silent = true, desc = "Claude: Ask question" })
 map("n", "<leader>d", function()
   require("plugins.configs.dev-dash").open_dashboard()
 end, { noremap = true, silent = true, desc = "Open Dev Dashboard" })
-
--- Dadbod: select connection
-map("n", "<leader>Dc", function()
-  local dbs = require("core.databases")
-  local names = vim.tbl_keys(dbs.connections)
-  table.sort(names)
-  vim.ui.select(names, { prompt = "Select database:" }, function(choice)
-    if choice then
-      dbs.connect(choice)
-    end
-  end)
-end, { noremap = true, silent = true, desc = "Connect to database" })
 
 -- Quickfix / location list navigation
 map("n", "]q", "<cmd>cnext<cr>zz", { noremap = true, silent = true, desc = "Next quickfix" })
@@ -366,26 +242,6 @@ map("v", "*", function()
   vim.cmd("normal! n")
   vim.fn.setreg("z", saved)
 end, { noremap = true, silent = true, desc = "Search visual selection" })
-
--- Scratch buffers
-map("n", "<leader>ns", function()
-  vim.cmd("enew")
-  vim.bo.buftype = "nofile"
-  vim.bo.bufhidden = "hide"
-  vim.bo.swapfile = false
-end, { noremap = true, silent = true, desc = "New scratch buffer" })
-
-map("n", "<leader>nS", function()
-  vim.ui.select({ "sql", "java", "json", "markdown", "lua" }, { prompt = "Filetype:" }, function(ft)
-    if ft then
-      vim.cmd("enew")
-      vim.bo.buftype = "nofile"
-      vim.bo.bufhidden = "hide"
-      vim.bo.swapfile = false
-      vim.bo.filetype = ft
-    end
-  end)
-end, { noremap = true, silent = true, desc = "New scratch with filetype" })
 
 -- Project command memory (per cwd)
 local last_cmd = {}
@@ -437,6 +293,5 @@ end, { noremap = true, silent = true, desc = "Toggle test/implementation" })
 -- Note: For full reload, restart nvim or use :Lazy reload <plugin>
 -- This mapping has been removed - just restart nvim for config changes
 
--- View messages and notifications
+-- View messages
 map("n", "<leader>fM", ":messages<CR>", { noremap = true, silent = true, desc = "View messages" })
-map("n", "<leader>fn", ":Telescope notify<CR>", { noremap = true, silent = true, desc = "View notifications" })
