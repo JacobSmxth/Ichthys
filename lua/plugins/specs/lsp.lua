@@ -33,6 +33,8 @@ return {
           "emmet-ls",
           "lua-language-server",
           "bash-language-server",
+          "basedpyright",
+          "ruff",
 
           -- Formatters
           "google-java-format",
@@ -50,6 +52,7 @@ return {
           "java-test",
           "codelldb",
           "js-debug-adapter",
+          "debugpy",
         },
         auto_update = false,
         run_on_start = true,
@@ -69,6 +72,17 @@ return {
   {
     "mfussenegger/nvim-jdtls",
     ft = "java",
+  },
+
+  -- Lua development (Neovim API completions)
+  {
+    "folke/lazydev.nvim",
+    ft = "lua",
+    opts = {
+      library = {
+        { path = "${3rd}/luv/library", words = { "vim%.uv" } },
+      },
+    },
   },
 
   -- TypeScript (enhanced)
@@ -99,6 +113,10 @@ return {
     event = { "BufReadPre", "BufNewFile" },
     config = function()
       require("conform").setup({
+        format_on_save = {
+          timeout_ms = 500,
+          lsp_fallback = true,
+        },
         formatters_by_ft = {
           java = { "google-java-format" },
           c = { "clang-format" },
@@ -117,6 +135,7 @@ return {
           sh = { "shellcheck" },
           bash = { "shellcheck" },
           zsh = { "shellcheck" },
+          python = { "ruff_format", "ruff_fix" },
         },
         formatters = {
           ["google-java-format"] = {

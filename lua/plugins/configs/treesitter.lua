@@ -22,6 +22,9 @@ configs.setup({
     "html",
     "css",
     "scss",
+    "python",
+    "tsx",
+    "json",
   },
 
   -- Install parsers synchronously (only applied to `ensure_installed`)

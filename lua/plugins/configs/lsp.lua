@@ -24,8 +24,10 @@ local function on_attach(client, bufnr)
   map("n", "]d", vim.diagnostic.goto_next, "Next diagnostic")
   map("n", "<leader>ld", vim.diagnostic.open_float, "Show diagnostic")
 
-  -- Explicitly disable inlay hints due to synchronization issues
-  pcall(vim.lsp.inlay_hint.enable, false, { bufnr = bufnr })
+  -- Enable inlay hints
+  if client.supports_method("textDocument/inlayHint") then
+    pcall(vim.lsp.inlay_hint.enable, true, { bufnr = bufnr })
+  end
 end
 
 -- Helper to setup LSP server
@@ -52,26 +54,15 @@ setup_lsp("clangd", {
 --   root_markers = { "tsconfig.json", "jsconfig.json", "package.json", ".git" },
 -- })
 
--- Lua
+-- Lua (lazydev.nvim handles workspace/library setup)
 setup_lsp("lua_ls", {
   cmd = { "lua-language-server" },
   filetypes = { "lua" },
   root_markers = { ".luarc.json", ".luarc.jsonc", ".luacheckrc", ".stylua.toml", "stylua.toml", "selene.toml", "selene.yml", ".git" },
   settings = {
     Lua = {
-      runtime = {
-        version = "LuaJIT",
-      },
-      diagnostics = {
-        globals = { "vim" },
-      },
-      workspace = {
-        library = vim.api.nvim_get_runtime_file("", true),
-        checkThirdParty = false,
-      },
-      telemetry = {
-        enable = false,
-      },
+      runtime = { version = "LuaJIT" },
+      telemetry = { enable = false },
     },
   },
 })
@@ -102,4 +93,28 @@ setup_lsp("emmet_ls", {
   cmd = { "emmet-ls", "--stdio" },
   filetypes = { "html", "css", "scss", "javascript", "javascriptreact", "typescript", "typescriptreact" },
   root_markers = { "package.json", ".git" },
+})
+
+-- Python (basedpyright - enhanced pyright fork)
+setup_lsp("basedpyright", {
+  cmd = { "basedpyright-langserver", "--stdio" },
+  filetypes = { "python" },
+  root_markers = { "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", "Pipfile", "pyrightconfig.json", ".git" },
+  settings = {
+    basedpyright = {
+      analysis = {
+        autoSearchPaths = true,
+        useLibraryCodeForTypes = true,
+        diagnosticMode = "openFilesOnly",
+        typeCheckingMode = "standard",
+      },
+    },
+  },
+})
+
+-- Ruff (Python linter/formatter LSP)
+setup_lsp("ruff", {
+  cmd = { "ruff", "server" },
+  filetypes = { "python" },
+  root_markers = { "pyproject.toml", "ruff.toml", ".ruff.toml", "setup.py", ".git" },
 })

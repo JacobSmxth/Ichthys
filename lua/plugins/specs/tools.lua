@@ -96,6 +96,46 @@ return {
           },
         }
       end
+
+      -- Python debugging (debugpy)
+      dap.adapters.python = {
+        type = "executable",
+        command = vim.fn.stdpath("data") .. "/mason/packages/debugpy/venv/bin/python",
+        args = { "-m", "debugpy.adapter" },
+      }
+
+      dap.configurations.python = {
+        {
+          type = "python",
+          request = "launch",
+          name = "Launch file",
+          program = "${file}",
+          pythonPath = function()
+            local venv = os.getenv("VIRTUAL_ENV")
+            if venv then
+              return venv .. "/bin/python"
+            end
+            return "python3"
+          end,
+        },
+        {
+          type = "python",
+          request = "launch",
+          name = "Launch with arguments",
+          program = "${file}",
+          args = function()
+            local args_str = vim.fn.input("Arguments: ")
+            return vim.split(args_str, " ")
+          end,
+          pythonPath = function()
+            local venv = os.getenv("VIRTUAL_ENV")
+            if venv then
+              return venv .. "/bin/python"
+            end
+            return "python3"
+          end,
+        },
+      }
     end,
   },
 
@@ -161,6 +201,7 @@ return {
       "nvim-treesitter/nvim-treesitter",
       "rcasia/neotest-java",
       "nvim-neotest/neotest-jest",
+      "nvim-neotest/neotest-python",
     },
     keys = {
       { "<leader>nr", function() require("neotest").run.run() end, desc = "Run nearest test" },
@@ -178,6 +219,10 @@ return {
             env = { CI = true },
             cwd = function() return vim.fn.getcwd() end,
           }),
+          require("neotest-python")({
+            dap = { justMyCode = false },
+            runner = "pytest",
+          }),
         },
         output = { enabled = true, open_on_run = false },
         quickfix = { enabled = false },
@@ -189,6 +234,7 @@ return {
 
   { "rcasia/neotest-java", dependencies = { "nvim-neotest/neotest" } },
   { "nvim-neotest/neotest-jest", dependencies = { "nvim-neotest/neotest" } },
+  { "nvim-neotest/neotest-python", dependencies = { "nvim-neotest/neotest" } },
 
   -- Find and replace
   {
