@@ -78,14 +78,10 @@ o.hidden = true
 -- Allow project-local configuration via .nvim.lua or .exrc
 o.exrc = true
 
--- Simple statusline
-o.statusline = "%#StatusLine# %{toupper(mode())} %#StatusLineNC#| %f %m %= %l:%c | %Y "
-o.laststatus = 2
-
 -- Space leader
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
--- Disable netrw (using Oil instead)
+-- Disable netrw (using neo-tree instead)
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1

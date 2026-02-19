@@ -1,22 +1,6 @@
 local augroup = vim.api.nvim_create_augroup
 local autocmd = vim.api.nvim_create_autocmd
 
-local original_select = vim.ui.select
-vim.ui.select = function(items, opts, on_choice)
-  if #items == 1 then
-    local item = items[1]
-    local format_item = opts.format_item or tostring
-    local preview = format_item(item)
-    vim.api.nvim_echo({{preview, "Normal"}}, false, {})
-    vim.defer_fn(function()
-      vim.cmd("redraw")
-      on_choice(item, 1)
-    end, 500)
-  else
-    original_select(items, opts, on_choice)
-  end
-end
-
 augroup("TrimWhitespace", { clear = true })
 autocmd("BufWritePre", {
   group = "TrimWhitespace",

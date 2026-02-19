@@ -14,8 +14,6 @@ map("v", "<Down>", "<Nop>", opts)
 map("v", "<Left>", "<Nop>", opts)
 map("v", "<Right>", "<Nop>", opts)
 
--- <leader>e is now handled by Oil config in lazy_setup.lua
-
 map("n", "<leader>i", function()
   local view = vim.fn.winsaveview()
   vim.cmd("normal! gg=G")
@@ -26,6 +24,20 @@ map("n", "<leader>/", ":Telescope current_buffer_fuzzy_find<CR>", { noremap = tr
 
 map("n", "n", "nzzzv", opts)
 map("n", "N", "Nzzzv", opts)
+
+-- Command palette (Zed-style Cmd+Shift+P)
+map("n", "<leader>p", function()
+  require("telescope.builtin").commands(require("telescope.themes").get_dropdown({
+    borderchars = {
+      prompt = { "─", "│", " ", "│", "┌", "┐", "│", "│" },
+      results = { "─", "│", "─", "│", "├", "┤", "┘", "└" },
+      preview = { "─", "│", "─", "│", "┌", "┐", "┘", "└" },
+    },
+  }))
+end, { noremap = true, silent = true, desc = "Command palette" })
+
+-- Command history
+map("n", "<leader>:", ":Telescope command_history<CR>", { noremap = true, silent = true, desc = "Command history" })
 
 -- Quick recent files (project scoped)
 map("n", "<leader>o", function()
@@ -41,7 +53,7 @@ map("n", "<leader>fg", ":Telescope live_grep<CR>", { noremap = true, silent = tr
 map("n", "<leader>fG", function()
   require("telescope.builtin").live_grep({
     prompt_title = "Regex Search (entire codebase)",
-    additional_args = function(opts)
+    additional_args = function()
       return { "--hidden", "--pcre2" }
     end,
   })
@@ -64,7 +76,6 @@ map("n", "<leader>fD", function()
     return
   end
 
-  -- Get directories using fd or find
   local cmd = vim.fn.executable("fd") == 1
     and "fd --type d --hidden --exclude .git --max-depth 5"
     or "find . -type d -not -path '*/\\.git/*' 2>/dev/null"
@@ -78,91 +89,17 @@ map("n", "<leader>fD", function()
         local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
         if selection then
-          -- Open Oil in the selected directory
-          local oil_ok, oil = pcall(require, "oil")
-          if oil_ok then
-            oil.open(selection[1])
-          else
-            -- Fallback: just cd if Oil isn't available
-            vim.cmd("cd " .. selection[1])
-            vim.notify("Changed directory to: " .. selection[1], vim.log.levels.INFO)
-          end
+          vim.cmd("cd " .. vim.fn.fnameescape(selection[1]))
+          vim.notify("Changed directory to: " .. selection[1], vim.log.levels.INFO)
         end
       end)
       return true
     end,
   }):find()
 end, { noremap = true, silent = true, desc = "Find directories" })
-map("n", "<leader>fm", function()
-  local ok_pickers, pickers = pcall(require, "telescope.pickers")
-  local ok_finders, finders = pcall(require, "telescope.finders")
-  local ok_conf, conf = pcall(require, "telescope.config")
-  local ok_actions, actions = pcall(require, "telescope.actions")
-  local ok_action_state, action_state = pcall(require, "telescope.actions.state")
 
-  if not (ok_pickers and ok_finders and ok_conf and ok_actions and ok_action_state) then
-    vim.notify("Telescope not available", vim.log.levels.ERROR)
-    return
-  end
-
-  local man_pages = {}
-
-  -- Use async job instead of blocking io.popen
-  local job_complete = false
-  local job_id = vim.fn.jobstart("man -k . 2>/dev/null | awk '{print $1}' | sort -u", {
-    stdout_buffered = true,
-    on_stdout = function(_, data)
-      if data then
-        for _, page in ipairs(data) do
-          if page and page ~= "" then
-            table.insert(man_pages, page)
-          end
-        end
-      end
-    end,
-    on_exit = function()
-      job_complete = true
-    end,
-  })
-
-  if job_id <= 0 then
-    vim.notify("Failed to get man pages", vim.log.levels.ERROR)
-    return
-  end
-
-  -- Wait for job with timeout (max 3 seconds)
-  local timeout = 3000
-  local waited = 0
-  while not job_complete and waited < timeout do
-    vim.wait(50)
-    waited = waited + 50
-  end
-
-  if not job_complete then
-    vim.fn.jobstop(job_id)
-    vim.notify("Man page search timed out", vim.log.levels.WARN)
-    return
-  end
-
-  if #man_pages == 0 then
-    vim.notify("No man pages found", vim.log.levels.WARN)
-    return
-  end
-
-  pickers.new({}, {
-    prompt_title = "Man Pages",
-    finder = finders.new_table({ results = man_pages }),
-    sorter = conf.values.generic_sorter({}),
-    attach_mappings = function(prompt_bufnr)
-      actions.select_default:replace(function()
-        actions.close(prompt_bufnr)
-        local selection = action_state.get_selected_entry()
-        vim.cmd("Man " .. selection[1])
-      end)
-      return true
-    end,
-  }):find()
-end, { noremap = true, silent = true, desc = "Find man pages" })
+-- Man pages (using Telescope builtin)
+map("n", "<leader>fm", ":Telescope man_pages<CR>", { noremap = true, silent = true, desc = "Find man pages" })
 
 map("n", "<leader><leader>", "<C-^>", opts)
 
@@ -210,10 +147,10 @@ map("n", "<leader>cq", function()
   end)
 end, { noremap = true, silent = true, desc = "Claude: Ask question" })
 
--- Dev Dashboard
+-- Quick project info popup
 map("n", "<leader>d", function()
-  require("plugins.configs.dev-dash").open_dashboard()
-end, { noremap = true, silent = true, desc = "Open Dev Dashboard" })
+  require("plugins.configs.project-info").show()
+end, { noremap = true, silent = true, desc = "Project info" })
 
 -- Quickfix / location list navigation
 map("n", "]q", "<cmd>cnext<cr>zz", { noremap = true, silent = true, desc = "Next quickfix" })
@@ -290,8 +227,6 @@ map("n", "<leader>to", function()
     vim.notify("Not a Java file", vim.log.levels.WARN)
   end
 end, { noremap = true, silent = true, desc = "Toggle test/implementation" })
--- Note: For full reload, restart nvim or use :Lazy reload <plugin>
--- This mapping has been removed - just restart nvim for config changes
 
 -- View messages
-map("n", "<leader>fM", ":messages<CR>", { noremap = true, silent = true, desc = "View messages" })
+map("n", "<leader>fM", ":Noice telescope<CR>", { noremap = true, silent = true, desc = "View messages (Noice)" })

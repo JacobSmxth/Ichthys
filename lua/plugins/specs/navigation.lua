@@ -1,4 +1,4 @@
--- Navigation plugins: telescope, oil, harpoon
+-- Navigation plugins: telescope, neo-tree, harpoon
 
 return {
   -- Telescope (fuzzy finder)
@@ -25,167 +25,107 @@ return {
     lazy = true,
   },
 
-  -- Oil (file explorer as buffer)
+  -- Neo-tree (file tree sidebar)
   {
-    "stevearc/oil.nvim",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
+    "nvim-neo-tree/neo-tree.nvim",
+    branch = "v3.x",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-tree/nvim-web-devicons",
+      "MunifTanjim/nui.nvim",
+    },
+    keys = {
+      { "<leader>e", "<cmd>Neotree toggle<cr>", desc = "Toggle file tree" },
+      { "<leader>E", "<cmd>Neotree reveal<cr>", desc = "Reveal current file in tree" },
+    },
     config = function()
-      require("oil").setup({
-        default_file_explorer = true,
-        columns = { "icon", "permissions", "size", "mtime" },
-        buf_options = { buflisted = false, bufhidden = "hide" },
-        win_options = {
-          wrap = false,
-          signcolumn = "no",
-          cursorcolumn = false,
-          foldcolumn = "0",
-          spell = false,
-          list = false,
-          conceallevel = 3,
-          concealcursor = "nvic",
+      require("neo-tree").setup({
+        close_if_last_window = true,
+        popup_border_style = "single",
+        enable_git_status = true,
+        enable_diagnostics = true,
+        sort_case_insensitive = true,
+        default_component_configs = {
+          indent = {
+            indent_size = 2,
+            padding = 1,
+            with_markers = true,
+            indent_marker = "│",
+            last_indent_marker = "└",
+          },
+          icon = {
+            folder_closed = "",
+            folder_open = "",
+            folder_empty = "",
+          },
+          modified = { symbol = "[+]" },
+          git_status = {
+            symbols = {
+              added = "+",
+              modified = "~",
+              deleted = "x",
+              renamed = "→",
+              untracked = "?",
+              ignored = "◌",
+              unstaged = "○",
+              staged = "●",
+              conflict = "!",
+            },
+          },
         },
-        delete_to_trash = false,
-        skip_confirm_for_simple_edits = false,
-        prompt_save_on_select_new_entry = true,
-        cleanup_delay_ms = 2000,
-        keymaps = {
-          ["g?"] = "actions.show_help",
-          ["<CR>"] = "actions.select",
-          ["<C-v>"] = "actions.select_vsplit",
-          ["<C-x>"] = "actions.select_split",
-          ["<C-t>"] = "actions.select_tab",
-          ["<C-p>"] = "actions.preview",
-          ["<C-c>"] = "actions.close",
-          ["<C-r>"] = "actions.refresh",
-          ["-"] = "actions.parent",
-          ["_"] = "actions.open_cwd",
-          ["`"] = "actions.cd",
-          ["~"] = "actions.tcd",
-          ["gs"] = "actions.change_sort",
-          ["gx"] = "actions.open_external",
-          ["g."] = "actions.toggle_hidden",
-          ["g\\"] = "actions.toggle_trash",
+        window = {
+          position = "left",
+          width = 32,
+          mappings = {
+            -- Navigation
+            ["l"] = "open",
+            ["h"] = "close_node",
+            ["<cr>"] = "open",
+            ["<2-LeftMouse>"] = "open",
+            ["s"] = "open_vsplit",
+            ["S"] = "open_split",
+
+            -- File operations
+            ["a"] = { "add", config = { show_path = "relative" } },
+            ["A"] = "add_directory",
+            ["d"] = "delete",
+            ["r"] = "rename",
+            ["c"] = "copy_to_clipboard",
+            ["x"] = "cut_to_clipboard",
+            ["p"] = "paste_from_clipboard",
+            ["m"] = "move",
+
+            -- Tree operations
+            ["."] = "set_root",
+            ["<bs>"] = "navigate_up",
+            ["H"] = "toggle_hidden",
+            ["/"] = "fuzzy_finder",
+            ["R"] = "refresh",
+            ["?"] = "show_help",
+            ["q"] = "close_window",
+
+            -- Collapse all
+            ["z"] = "close_all_nodes",
+            ["Z"] = "expand_all_nodes",
+          },
         },
-        use_default_keymaps = true,
-        view_options = {
-          show_hidden = false,
-          is_hidden_file = function(name) return vim.startswith(name, ".") end,
-          is_always_hidden = function() return false end,
-          sort = { { "type", "asc" }, { "name", "asc" } },
+        filesystem = {
+          follow_current_file = { enabled = true },
+          use_libuv_file_watcher = true,
+          filtered_items = {
+            visible = false,
+            hide_dotfiles = false,
+            hide_gitignored = true,
+            hide_by_name = { "node_modules", ".git", "__pycache__", ".DS_Store" },
+          },
         },
-        float = {
-          padding = 2,
-          max_width = 90,
-          max_height = 30,
-          border = "rounded",
-          win_options = { winblend = 0 },
+        buffers = {
+          follow_current_file = { enabled = true },
         },
-        preview = {
-          max_width = 0.9,
-          min_width = { 40, 0.4 },
-          max_height = 0.9,
-          min_height = { 5, 0.1 },
-          border = "rounded",
-          win_options = { winblend = 0 },
-        },
-        progress = {
-          max_width = 0.9,
-          min_width = { 40, 0.4 },
-          max_height = { 10, 0.9 },
-          min_height = { 5, 0.1 },
-          border = "rounded",
-          minimized_border = "none",
-          win_options = { winblend = 0 },
+        git_status = {
+          window = { position = "float" },
         },
       })
-
-      -- Sidebar toggle
-      local oil_sidebar_winid = nil
-
-      local function toggle_oil_sidebar()
-        if oil_sidebar_winid then
-          if vim.api.nvim_win_is_valid(oil_sidebar_winid) then
-            local buf = vim.api.nvim_win_get_buf(oil_sidebar_winid)
-            if not vim.api.nvim_buf_is_valid(buf) then
-              oil_sidebar_winid = nil
-            else
-              vim.api.nvim_win_close(oil_sidebar_winid, true)
-              oil_sidebar_winid = nil
-              return
-            end
-          else
-            oil_sidebar_winid = nil
-          end
-        end
-
-        if not oil_sidebar_winid then
-          vim.cmd("topleft vsplit")
-          require("oil").open()
-          oil_sidebar_winid = vim.api.nvim_get_current_win()
-          vim.api.nvim_win_set_width(oil_sidebar_winid, 35)
-          vim.w.is_oil_sidebar = true
-        end
-      end
-
-      -- Sidebar keymaps
-      vim.api.nvim_create_autocmd("FileType", {
-        pattern = "oil",
-        callback = function()
-          if vim.w.is_oil_sidebar then
-            vim.keymap.set("n", "<C-h>", "<C-w>h", { buffer = true })
-            vim.keymap.set("n", "<C-l>", "<C-w>l", { buffer = true })
-            vim.keymap.set("n", "<C-j>", "<C-w>j", { buffer = true })
-            vim.keymap.set("n", "<C-k>", "<C-w>k", { buffer = true })
-
-            vim.keymap.set("n", "<CR>", function()
-              local oil = require("oil")
-              local entry = oil.get_cursor_entry()
-              if not entry then return end
-
-              if entry.type == "file" then
-                local dir = oil.get_current_dir()
-                local filepath = dir .. entry.name
-                local current_win = vim.api.nvim_get_current_win()
-                local windows = vim.api.nvim_list_wins()
-                local target_win = nil
-
-                for _, win in ipairs(windows) do
-                  local win_buf = vim.api.nvim_win_get_buf(win)
-                  local buf_ft = vim.api.nvim_get_option_value("filetype", { buf = win_buf })
-                  local win_config = vim.api.nvim_win_get_config(win)
-                  if win ~= current_win and buf_ft ~= "oil" and win_config.relative == "" then
-                    target_win = win
-                    break
-                  end
-                end
-
-                if target_win then
-                  vim.api.nvim_set_current_win(target_win)
-                  vim.cmd("edit " .. vim.fn.fnameescape(filepath))
-                else
-                  vim.cmd("wincmd l")
-                  vim.cmd("edit " .. vim.fn.fnameescape(filepath))
-                end
-              else
-                oil.select()
-              end
-            end, { buffer = true, desc = "Open in main window" })
-          end
-        end,
-      })
-
-      vim.api.nvim_create_autocmd({ "BufWipeout", "WinClosed" }, {
-        pattern = "*",
-        callback = function(args)
-          if oil_sidebar_winid and args.match == tostring(oil_sidebar_winid) then
-            oil_sidebar_winid = nil
-          end
-        end,
-      })
-
-      vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
-      vim.keymap.set("n", "<leader>-", require("oil").toggle_float, { desc = "Open Oil (float)" })
-      vim.keymap.set("n", "<leader>e", toggle_oil_sidebar, { desc = "Toggle Oil sidebar" })
     end,
   },
 

@@ -95,7 +95,7 @@ return {
       require("illuminate").configure({
         providers = { "lsp", "treesitter", "regex" },
         delay = 200,
-        filetypes_denylist = { "oil", "TelescopePrompt", "lazy", "mason" },
+        filetypes_denylist = { "neo-tree", "TelescopePrompt", "lazy", "mason" },
         under_cursor = true,
         large_file_cutoff = 2000,
         large_file_overrides = { providers = { "lsp" } },
